@@ -49,9 +49,26 @@ services:
     depends_on:
       - kafka
 
-  postgres:
+  product_service:
+    image: node:22
+    container_name: event_product_service
+    command: bash -c "yarn install && yarn run start:dev"
+    ports:
+      - "3000:3000"
+    working_dir: "/var/www/product.service"
+    volumes:
+      - ./product.service:/var/www/product.service
+    networks:
+      reverse-proxy:
+        aliases:
+          - event_product_service
+    depends_on:
+      - kafka
+      - product_db
+
+  product_db:
     image: postgres:15
-    container_name: product_db
+    container_name: event_product_db
     restart: always
     environment:
       POSTGRES_USER: product
@@ -61,3 +78,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      reverse-proxy:
+        aliases:
+          - event_product_db
