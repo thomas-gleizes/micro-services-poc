@@ -1,0 +1,63 @@
+volumes:
+  kafka-data:
+    driver: local
+
+  postgres_data:
+    driver: local
+
+networks:
+  reverse-proxy:
+
+services:
+  kafka:
+    image: apache/kafka:latest
+    container_name: event_bus
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      reverse-proxy:
+        aliases:
+          - event_bus
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://event_bus:9092,CONTROLLER://event_bus:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://event_bus:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@event_bus:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: event_ui
+    ports:
+      - "8080:8080"
+    networks:
+      reverse-proxy:
+        aliases:
+          - event_ui
+    environment:
+      KAFKA_CLUSTERS_0_NAME: event_store
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: event_bus:9092
+      KAFKA_CLUSTERS_0_METRICS_PORT: 9997
+      SERVER_SERVLET_CONTEXT_PATH: /
+    depends_on:
+      - kafka
+
+  postgres:
+    image: postgres:15
+    container_name: product_db
+    restart: always
+    environment:
+      POSTGRES_USER: product
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: product
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
