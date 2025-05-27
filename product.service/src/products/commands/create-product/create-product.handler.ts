@@ -1,8 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
-import uuid from 'uuid'
 import { CreateProductCommand } from './create-product.command'
 import { ProductCreatedEvent } from './product-created.event'
 import { KafkaService } from '../../../kafka/kafka.service'
+import * as crypto from 'node:crypto'
 
 @CommandHandler(CreateProductCommand)
 export class CreateProductHandler implements ICommandHandler<CreateProductCommand> {
@@ -10,7 +10,7 @@ export class CreateProductHandler implements ICommandHandler<CreateProductComman
 
   async execute(command: CreateProductCommand): Promise<void> {
     const event = new ProductCreatedEvent({
-      id: uuid.v4(),
+      id: crypto.randomUUID(),
       name: command.name,
       price: command.price,
     })

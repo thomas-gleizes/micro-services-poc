@@ -14,6 +14,7 @@ export class ProductController {
   @Post('products')
   @HttpCode(HttpStatus.CREATED)
   create(@Body() body: CreateProductDto) {
+    console.log(body)
     return this.commandBus.execute(new CreateProductCommand(body.name, body.price))
   }
 
