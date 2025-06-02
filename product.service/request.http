@@ -1,15 +1,7 @@
 ### GET request to example server
 GET {{baseURL}}/products/6fbd720f-210d-4ee3-94c4-7f0bfd268bea
 
-<> 2025-05-24T191614.200.json
-<> 2025-05-24T191613.200.json
-<> 2025-05-24T191610.200.json
-<> 2025-05-24T191608.200.json
-<> 2025-05-24T191604.200.json
-<> 2025-05-24T190705.200.json
-<> 2025-05-24T185042.200.json
-
-###
+### POST Create product
 POST {{baseURL}}/products
 Content-Type: application/json
 
@@ -18,20 +10,3 @@ Content-Type: application/json
   "price": "{{$random.commerce.price}}"
 }
 
-<> 2025-05-24T191556.201.json
-<> 2025-05-24T191555.201.json
-<> 2025-05-24T191552.201.json
-<> 2025-05-24T191548.400.json
-<> 2025-05-24T191544.400.json
-<> 2025-05-24T191440.400.json
-<> 2025-05-24T191338.500.json
-<> 2025-05-24T191224.500.json
-<> 2025-05-24T191218.400.json
-<> 2025-05-24T191208.400.json
-<> 2025-05-24T191151.400.json
-<> 2025-05-24T190656.500.json
-<> 2025-05-24T190308.201.json
-<> 2025-05-24T190225.500.json
-<> 2025-05-24T185919.201.json
-<> 2025-05-24T185050.201.json
-<> 2025-05-24T185045.404.json
