@@ -1,65 +1,59 @@
-import { Consumer, Producer, Admin } from 'kafkajs'
+import { Consumer, Producer, Admin, EachMessageHandler, Kafka } from 'kafkajs'
 import { Injectable, Inject, OnModuleInit, OnModuleDestroy, LoggerService, Logger } from '@nestjs/common'
 
 @Injectable()
-export class KafkaService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(KafkaService.name)
+export class KafkaService implements OnModuleDestroy, OnModuleInit {
+  private readonly _logger = new Logger(KafkaService.name)
+  private readonly _consumers: Map<string | RegExp, Consumer> = new Map()
+  private readonly _producer: Producer
 
-  constructor(
-    @Inject('KAFKA_PRODUCER') private readonly _producer: Producer,
-    @Inject('KAFKA_CONSUMER') private readonly _consumer: Consumer,
-    @Inject('KAFKA_ADMIN') private readonly _admin: Admin,
-  ) {}
+  constructor(@Inject('KAFKA_CONNECTION') private readonly kafka: Kafka) {
+    this._producer = this.kafka.producer({ allowAutoTopicCreation: true })
+  }
 
   async onModuleInit() {
-    try {
-      await this._producer.connect()
-      await this._consumer.connect()
-      await this._admin.connect()
-      this.logger.log('KafkaService initialized and connected to Kafka')
-    } catch (error) {
-      this.logger.error('Error initializing KafkaService:', error)
-      throw error
-    }
+    await this._producer.connect()
   }
 
   async onModuleDestroy() {
-    await this._producer.disconnect()
-    await this._consumer.disconnect()
-    await this._admin.disconnect()
-    this.logger.warn('KafkaService initialized and connected to Kafka')
+    return Promise.allSettled([
+      this._producer.disconnect(),
+      Array.from(this._consumers.values()).map((consumer) => consumer.disconnect()),
+    ])
   }
 
-  private async setupTopics(topic) {
-    const topics = await this._admin.listTopics()
-    if (!topics.includes(topic)) {
-      this.logger.log('Creating topic:', topic)
-      await this._admin.createTopics({
-        topics: [{ topic }],
-      })
-    }
-  }
-
-  async emit(topic: string, message: any) {
-    this.logger.debug(`New event to ${topic} : ${message}`)
+  async publish(topic: string, message: any) {
+    this._logger.debug(`New event to ${topic} : ${message}`)
     await this._producer.send({
       topic,
       messages: [{ value: JSON.stringify(message) }],
     })
   }
 
-  async subscribe(topic: string) {
-    await this.setupTopics(topic)
-    await this._consumer.subscribe({ topic, fromBeginning: true })
-  }
+  async consume<Message = unknown>(
+    topic: string | RegExp,
+    handler: (payload: Message) => Promise<void> | void,
+  ) {
+    if (this._consumers.has(topic)) {
+      this._logger.warn(`Consumer for topic ${topic} already exists`)
+      return this._consumers.get(topic)
+    }
 
-  async runEachMessage(callback: (message: any) => Promise<void> | void) {
-    await this._consumer.run({
-      eachMessage: async ({ message, topic }) => {
-        this.logger.debug(`Message received ${topic} : ${message}`)
-        if (message.value) {
-          await callback(JSON.parse(message.value.toString()))
-        }
+    this._logger.debug(`Creating consumer for topic ${topic}`)
+    const consumer = this.kafka.consumer({
+      groupId: `default-group-${topic}`,
+      allowAutoTopicCreation: true,
+    })
+
+    await consumer.connect()
+    await consumer.subscribe({ topic, fromBeginning: true })
+    this._consumers.set(topic, consumer)
+    this._logger.debug(`Consumer for topic ${topic} created successfully`)
+
+    await consumer.run({
+      eachMessage: async (payload) => {
+        this._logger.debug(`Received message on topic ${topic}`)
+        return handler(JSON.parse(payload.message.value!.toString()))
       },
     })
   }

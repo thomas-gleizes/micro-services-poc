@@ -7,6 +7,7 @@ import { KafkaService } from 'src/kafka/kafka.service'
 import { ProductCreatedConsumer } from './commands/create-product/create-product.consumer'
 import { KafkaModule } from '../kafka/kafka.module'
 import { ReadProductsHandler } from './queries/read-prodcuts/read-products.handler'
+import { UpdateProductConsumer } from './commands/update-product/update-product.consumer'
 
 @Module({
   imports: [KafkaModule],
@@ -18,6 +19,7 @@ import { ReadProductsHandler } from './queries/read-prodcuts/read-products.handl
     CreateProductHandler,
     KafkaService,
     ProductCreatedConsumer,
+    UpdateProductConsumer,
   ],
 })
 export class ProductModule {}

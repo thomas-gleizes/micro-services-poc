@@ -12,8 +12,7 @@ export class ProductCreatedConsumer implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    await this.kafkaService.subscribe(ProductCreatedEvent.EVENT_NAME)
-    await this.kafkaService.runEachMessage(async (event: ProductCreatedEvent) => {
+    await this.kafkaService.consume(ProductCreatedEvent.EVENT_NAME, async (event: ProductCreatedEvent) => {
       try {
         console.log('Event', event)
         const result = await this.prisma.product.create({ data: event.product })
