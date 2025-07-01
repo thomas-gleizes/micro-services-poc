@@ -3,11 +3,11 @@ import { Product } from '@prisma/client'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { CreateProductCommand } from './create-product.command'
 import { ProductCreatedEvent } from './product-created.event'
-import { KafkaService } from '../../../kafka/kafka.service'
+import { KafkaProducer } from '../../../kafka/kafka.producer'
 
 @CommandHandler(CreateProductCommand)
 export class CreateProductHandler implements ICommandHandler<CreateProductCommand> {
-  constructor(private readonly kafkaService: KafkaService) {}
+  constructor(private readonly kafkaProducer: KafkaProducer) {}
 
   async execute(command: CreateProductCommand): Promise<Product> {
     const event = new ProductCreatedEvent({
@@ -16,7 +16,7 @@ export class CreateProductHandler implements ICommandHandler<CreateProductComman
       price: command.price,
     })
 
-    await this.kafkaService.publish(ProductCreatedEvent.EVENT_NAME, event)
+    await this.kafkaProducer.publish(ProductCreatedEvent.EVENT_NAME, event)
 
     return event.product
   }

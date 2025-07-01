@@ -1,25 +1,24 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { PrismaService } from '../../../services/prisma.service'
-import { KafkaService } from '../../../kafka/kafka.service'
 import { ProductCreatedEvent } from './product-created.event'
-import { Product } from '@prisma/client'
+import { KafkaConsumer } from '../../../kafka/kafka.consumer'
 
 @Injectable()
 export class ProductCreatedConsumer implements OnModuleInit {
   constructor(
-    private readonly kafkaService: KafkaService,
+    private readonly kafkaConsumer: KafkaConsumer,
     private readonly prisma: PrismaService,
   ) {}
 
   async onModuleInit() {
-    await this.kafkaService.consume(ProductCreatedEvent.EVENT_NAME, async (event: ProductCreatedEvent) => {
-      try {
-        console.log('Event', event)
-        const result = await this.prisma.product.create({ data: event.product })
-        console.log('Result', result)
-      } catch (error) {
-        console.log(error)
-      }
-    })
+    // await this.kafkaConsumer.consume(ProductCreatedEvent.EVENT_NAME, async (event: ProductCreatedEvent) => {
+    //   try {
+    //     console.log('Event', event)
+    //     const result = await this.prisma.product.create({ data: event.product })
+    //     console.log('Result', result)
+    //   } catch (error) {
+    //     console.log(error)
+    //   }
+    // })
   }
 }
