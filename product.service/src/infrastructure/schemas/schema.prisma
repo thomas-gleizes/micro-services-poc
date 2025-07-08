@@ -14,9 +14,20 @@ datasource db {
 }
 
 model Product {
-  id    String @id @default(uuid()) @db.Uuid
-  name  String @unique
-  price Float
+  id          String        @id
+  name        String        @unique
+  description String
+  price       Float
+  currency    String
+  image       String
+  status      ProductStatus
+  createdAt   DateTime
+  updatedAt   DateTime
 
   @@map("products")
+}
+
+enum ProductStatus {
+  AVAILABLE
+  UNAVAILABLE
 }

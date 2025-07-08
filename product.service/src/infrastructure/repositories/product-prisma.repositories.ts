@@ -1,0 +1,68 @@
+import { Injectable } from '@nestjs/common'
+import { Product, Prisma } from '@prisma/client'
+import { Pagination, ProductFilters, ProductRepository } from '../../domain/repositories/product.repository'
+import { ProductPrimitives } from 'src/domain/entities/product.aggregate'
+import { PrismaService } from '../../shared/services/prisma.service'
+import { ProductStatus } from '../../domain/enums/product-status.enum'
+import { ProductNotFoundException } from '../../domain/execptions/product-not-found.expetion'
+
+@Injectable()
+export class ProductPrismaRepository implements ProductRepository {
+  constructor(private readonly prisma: PrismaService) {}
+
+  private mapToPrimitives(record: Product): ProductPrimitives {
+    return {
+      id: record.id,
+      name: record.name,
+      price: record.price,
+      description: record.description,
+      currency: record.currency,
+      image: record.image,
+      status: record.status as ProductStatus,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+    }
+  }
+
+  private buildFilters(filters: ProductFilters): Prisma.ProductWhereInput {
+    return filters
+  }
+
+  async findById(id: string): Promise<ProductPrimitives> {
+    const product = await this.prisma.product.findUnique({ where: { id } })
+
+    if (!product) throw new ProductNotFoundException()
+
+    return this.mapToPrimitives(product)
+  }
+
+  async save(product: ProductPrimitives): Promise<ProductPrimitives> {
+    const record = await this.prisma.product.create({
+      data: product,
+    })
+
+    return this.mapToPrimitives(record)
+  }
+
+  async update(id: string, data: ProductPrimitives): Promise<ProductPrimitives> {
+    const record = await this.prisma.product.update({
+      where: { id },
+      data: data,
+    })
+
+    return this.mapToPrimitives(record)
+  }
+
+  async findAll(filters: ProductFilters, pagination?: Pagination): Promise<ProductPrimitives[]> {
+    const limit = pagination?.limit || 10
+    const page = pagination?.page || 0
+
+    const records = await this.prisma.product.findMany({
+      where: this.buildFilters(filters),
+      skip: page * limit,
+      take: limit,
+    })
+
+    return records.map((record) => this.mapToPrimitives(record))
+  }
+}

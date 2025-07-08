@@ -1,5 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs'
-import { PrismaService } from '../../../services/prisma.service'
+import { PrismaService } from '../../../shared/services/prisma.service'
 import { ReadProductQuery } from './read-product.query'
 
 @QueryHandler(ReadProductQuery)
