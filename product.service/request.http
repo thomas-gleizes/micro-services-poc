@@ -1,12 +1,18 @@
-### GET request to example server
-GET {{baseURL}}/products/6fbd720f-210d-4ee3-94c4-7f0bfd268bea
+### GET a product by ID
+GET {{baseURL}}/products/b5a60f7e-a2ac-4026-a7f0-87afc20a345a
 
-### POST Create product
+### GET all products
+GET {{baseURL}}/products
+
+### POST product
 POST {{baseURL}}/products
 Content-Type: application/json
 
 {
   "name": "{{$random.commerce.productName}}",
-  "price": "{{$random.commerce.price}}"
+  "price": 22.2,
+  "description": "{{$random.lorem.sentence}}",
+  "currency": "USD",
+  "image": "https://placehold.co/600x400"
 }
 

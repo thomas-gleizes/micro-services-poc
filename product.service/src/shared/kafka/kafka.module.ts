@@ -1,31 +1,21 @@
 import { Module } from '@nestjs/common'
-import { Kafka, logLevel } from 'kafkajs'
-import { KafkaProducer } from './kafka.producer'
-import { KafkaConsumer } from './kafka.consumer'
-import { KafkaCommandPublisher } from './kafka-command.publisher'
+import { ConfigModule } from '@nestjs/config'
+import { KafkaPublisher } from './kafka.publisher'
+import { KafkaSubscriber } from './kafka.subscriber'
+import { ProductCreatedEvent } from '../../domain/events/products/product-created/product-created.event'
+import { ProductUpdatedEvent } from '../../domain/events/products/product-updated/product-updated.event'
+import { ProductDeletedEvent } from '../../domain/events/products/product-deleted/product-deleted.event'
 
 @Module({
+  imports: [ConfigModule.forRoot()],
   providers: [
+    KafkaSubscriber,
+    KafkaPublisher,
     {
-      provide: 'KAFKA_PRODUCER',
-      useFactory: () =>
-        new Kafka({
-          brokers: ['event_bus:9092'],
-          logLevel: logLevel.WARN,
-        }).producer({ allowAutoTopicCreation: true }),
+      provide: 'EVENTS',
+      useValue: [ProductCreatedEvent, ProductUpdatedEvent, ProductDeletedEvent],
     },
-    {
-      provide: 'KAFKA_CONSUMER',
-      useFactory: () =>
-        new Kafka({
-          brokers: ['event_bus:9092'],
-          logLevel: logLevel.WARN,
-        }).consumer({ allowAutoTopicCreation: true, groupId: 'product.service' }),
-    },
-    KafkaProducer,
-    KafkaConsumer,
-    KafkaCommandPublisher,
   ],
-  exports: [KafkaProducer, KafkaConsumer, KafkaCommandPublisher],
+  exports: [KafkaPublisher, KafkaSubscriber],
 })
 export class KafkaModule {}

@@ -1,11 +1,13 @@
 import { CommandHandler, EventPublisher, ICommandHandler } from '@nestjs/cqrs'
 import { UpdateProductCommand } from './update-product.command'
-import { ProductRepository } from '../../../domain/repositories/product.repository'
+import { PRODUCT_REPOSITORY, ProductRepository } from '../../../domain/repositories/product.repository'
 import { ProductAggregate } from '../../../domain/entities/product.aggregate'
+import { Inject } from '@nestjs/common'
 
 @CommandHandler(UpdateProductCommand)
 export class UpdateProductHandler implements ICommandHandler<UpdateProductCommand> {
   constructor(
+    @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: ProductRepository,
     private readonly publisher: EventPublisher,
   ) {}

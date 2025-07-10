@@ -23,4 +23,6 @@ export interface ProductRepository {
   update(id: string, product: ProductPrimitives): Promise<ProductPrimitives>
 
   findAll(filters: ProductFilters, pagination?: Pagination): Promise<ProductPrimitives[]>
+
+  delete(id: string): Promise<void>
 }

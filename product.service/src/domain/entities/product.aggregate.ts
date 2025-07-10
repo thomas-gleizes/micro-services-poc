@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto'
 import { AggregateRoot } from '@nestjs/cqrs'
-import { ProductCreatedEvent } from '../events/products/product-created.event'
+import { ProductCreatedEvent } from '../events/products/product-created/product-created.event'
 import { ProductStatus } from '../enums/product-status.enum'
-import { ProductUpdatedEvent } from '../events/products/product-updated.event'
-import { ProductDeleteEvent } from '../events/products/product-delete.event'
+import { ProductUpdatedEvent } from '../events/products/product-updated/product-updated.event'
+import { ProductDeletedEvent } from '../events/products/product-deleted/product-deleted.event'
 
 export type ProductPrimitives = {
   id: string
@@ -74,7 +74,7 @@ export class ProductAggregate extends AggregateRoot {
   }
 
   delete() {
-    this.apply(new ProductDeleteEvent(this.id))
+    this.apply(new ProductDeletedEvent(this.id))
   }
 
   get id(): string {

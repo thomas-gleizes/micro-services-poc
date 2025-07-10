@@ -15,7 +15,7 @@ datasource db {
 
 model Product {
   id          String        @id
-  name        String        @unique
+  name        String
   description String
   price       Float
   currency    String

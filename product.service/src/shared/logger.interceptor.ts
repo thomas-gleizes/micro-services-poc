@@ -3,7 +3,7 @@ import { Observable, throwError } from 'rxjs'
 import { tap, catchError } from 'rxjs/operators'
 
 @Injectable()
-export class LoggingInterceptor implements NestInterceptor {
+export class HttpLoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger('HTTP')
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {

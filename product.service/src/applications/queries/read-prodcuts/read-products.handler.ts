@@ -1,12 +1,17 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs'
 import { ReadProductsQuery } from './read-products.query'
-import { PrismaService } from '../../../shared/services/prisma.service'
+import { PrismaService } from '../../../shared/prisma/prisma.service'
+import { Inject } from '@nestjs/common'
+import { PRODUCT_REPOSITORY, ProductRepository } from '../../../domain/repositories/product.repository'
 
 @QueryHandler(ReadProductsQuery)
 export class ReadProductsHandler implements IQueryHandler<ReadProductsQuery> {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @Inject(PRODUCT_REPOSITORY)
+    private readonly productRepository: ProductRepository,
+  ) {}
 
   execute(query: ReadProductsQuery): Promise<any> {
-    return this.prisma.product.findMany({ where: {} })
+    return this.productRepository.findAll({})
   }
 }

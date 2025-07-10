@@ -6,7 +6,6 @@ export class CreateProductDto {
   name: string
 
   @IsNumber()
-  @Transform(({ value }) => +value, { toClassOnly: true })
   price: number
 
   @IsString()

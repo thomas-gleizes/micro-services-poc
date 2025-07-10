@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Product, Prisma } from '@prisma/client'
 import { Pagination, ProductFilters, ProductRepository } from '../../domain/repositories/product.repository'
 import { ProductPrimitives } from 'src/domain/entities/product.aggregate'
-import { PrismaService } from '../../shared/services/prisma.service'
+import { PrismaService } from '../../shared/prisma/prisma.service'
 import { ProductStatus } from '../../domain/enums/product-status.enum'
 import { ProductNotFoundException } from '../../domain/execptions/product-not-found.expetion'
 
@@ -38,7 +38,17 @@ export class ProductPrismaRepository implements ProductRepository {
 
   async save(product: ProductPrimitives): Promise<ProductPrimitives> {
     const record = await this.prisma.product.create({
-      data: product,
+      data: {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        description: product.description,
+        currency: product.currency,
+        image: product.image,
+        status: product.status,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
+      },
     })
 
     return this.mapToPrimitives(record)
@@ -64,5 +74,9 @@ export class ProductPrismaRepository implements ProductRepository {
     })
 
     return records.map((record) => this.mapToPrimitives(record))
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.product.delete({ where: { id } })
   }
 }
