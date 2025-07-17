@@ -1,5 +1,7 @@
+@id = b91f1441-b466-478b-ba84-8b563e06d17e
+
 ### GET a product by ID
-GET {{baseURL}}/products/b5a60f7e-a2ac-4026-a7f0-87afc20a345a
+GET {{baseURL}}/products/{{id}}
 
 ### GET all products
 GET {{baseURL}}/products
@@ -10,9 +12,23 @@ Content-Type: application/json
 
 {
   "name": "{{$random.commerce.productName}}",
-  "price": 22.2,
+  "price": 22.20,
   "description": "{{$random.lorem.sentence}}",
   "currency": "USD",
   "image": "https://placehold.co/600x400"
 }
 
+### DELETE a product by ID
+DELETE {{baseURL}}/products/{{id}}
+
+### UPDATE a product
+PATCH {{baseURL}}/products/{{id}}
+Content-Type: application/json
+
+{
+  "name": "{{$random.commerce.productName}}",
+  "price": 10.55,
+  "description": "{{$random.lorem.sentence}}",
+  "currency": "USD",
+  "image": "https://placehold.co/600x400"
+}

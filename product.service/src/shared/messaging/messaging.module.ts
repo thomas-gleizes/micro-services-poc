@@ -3,9 +3,7 @@ import { KafkaModule } from '../kafka/kafka.module'
 import { CqrsModule, EventBus } from '@nestjs/cqrs'
 import { MessagingEventPublisher } from './messaging-event.publisher'
 import { MessagingEventSubscriber } from './messaging-event.subscriber'
-import { ProductCreatedEvent } from '../../domain/events/products/product-created/product-created.event'
-import { ProductUpdatedEvent } from '../../domain/events/products/product-updated/product-updated.event'
-import { ProductDeletedEvent } from '../../domain/events/products/product-deleted/product-deleted.event'
+import { productEvents } from '../../domain/events'
 
 @Module({
   imports: [KafkaModule, CqrsModule],
@@ -14,7 +12,7 @@ import { ProductDeletedEvent } from '../../domain/events/products/product-delete
     MessagingEventSubscriber,
     {
       provide: 'EVENTS',
-      useValue: [ProductCreatedEvent, ProductUpdatedEvent, ProductDeletedEvent],
+      useValue: productEvents,
     },
   ],
 })

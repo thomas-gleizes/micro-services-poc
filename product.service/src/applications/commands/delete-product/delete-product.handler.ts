@@ -1,4 +1,4 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
+import { CommandHandler, EventPublisher, ICommandHandler } from '@nestjs/cqrs'
 import { DeleteProductCommand } from './delete-product.commend'
 import { PRODUCT_REPOSITORY, ProductRepository } from '../../../domain/repositories/product.repository'
 import { ProductAggregate } from '../../../domain/entities/product.aggregate'
@@ -9,12 +9,12 @@ export class DeleteProductHandler implements ICommandHandler<DeleteProductComman
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: ProductRepository,
+    private readonly publisher: EventPublisher,
   ) {}
 
   async execute(command: DeleteProductCommand): Promise<void> {
     const primitives = await this.productRepository.findById(command.productId)
-
-    const productAggregate = new ProductAggregate(primitives)
+    const productAggregate = this.publisher.mergeObjectContext(new ProductAggregate(primitives))
 
     productAggregate.delete()
     productAggregate.commit()

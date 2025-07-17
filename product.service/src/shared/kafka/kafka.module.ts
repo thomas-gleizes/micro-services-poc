@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { Kafka } from 'kafkajs'
+import { Kafka, logLevel } from 'kafkajs'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { KafkaProducer } from './kafka.producer'
 import { KafkaConsumer } from './kafka.consumer'
@@ -10,7 +10,10 @@ import { KafkaConsumer } from './kafka.consumer'
     {
       provide: 'KAFKA_BROKER',
       useFactory: (config: ConfigService) =>
-        new Kafka({ brokers: [config.get<string>('KAFKA_BROKER', 'event_bus:9092')] }),
+        new Kafka({
+          brokers: [config.get<string>('KAFKA_BROKER', 'event_bus:9092')],
+          logLevel: logLevel.WARN,
+        }),
       inject: [ConfigService],
     },
     KafkaProducer,
