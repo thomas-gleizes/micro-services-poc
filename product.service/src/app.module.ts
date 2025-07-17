@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
+import { ConfigModule } from '@nestjs/config'
 import { ProductModule } from './shared/modules/product.module'
-import { PrismaModule } from './shared/prisma/prisma.module'
+import { MessagingModule } from './shared/messaging/messaging.module'
 
 @Module({
-  imports: [CqrsModule.forRoot(), ProductModule, PrismaModule],
+  imports: [ConfigModule.forRoot(), CqrsModule.forRoot(), ProductModule, MessagingModule],
   providers: [],
 })
 export class AppModule {}

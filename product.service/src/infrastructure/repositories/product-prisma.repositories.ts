@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common'
 import { Product, Prisma } from '@prisma/client'
 import { Pagination, ProductFilters, ProductRepository } from '../../domain/repositories/product.repository'
 import { ProductPrimitives } from 'src/domain/entities/product.aggregate'
-import { PrismaService } from '../../shared/prisma/prisma.service'
 import { ProductStatus } from '../../domain/enums/product-status.enum'
 import { ProductNotFoundException } from '../../domain/execptions/product-not-found.expetion'
+import { PrismaService } from '../../shared/prisma/prisma.service'
 
 @Injectable()
 export class ProductPrismaRepository implements ProductRepository {

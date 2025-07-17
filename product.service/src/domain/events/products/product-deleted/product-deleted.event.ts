@@ -1,24 +1,15 @@
-import { BaseEvent } from '../../base.event'
+import { DomainEvent } from '../../domain-event'
 
-export class ProductDeletedEvent extends BaseEvent {
+export class ProductDeletedEvent extends DomainEvent<string, ProductDeletedEvent> {
   constructor(public readonly productId: string) {
-    super();
+    super()
   }
 
-  /**
-   * Deserializes the event data from a JSON string or object.
-   * @param data The serialized event data
-   */
-  static deserialize(data: any): ProductDeletedEvent {
-    return new ProductDeletedEvent(data.productId);
+  serialize(): string {
+    return this.productId
   }
 
-  /**
-   * Serializes the event to a JSON-compatible object.
-   */
-  serialize(): any {
-    return {
-      productId: this.productId
-    };
+  static deserialize(data: string) {
+    return new ProductDeletedEvent(data)
   }
 }

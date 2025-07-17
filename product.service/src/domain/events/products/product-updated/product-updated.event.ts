@@ -1,25 +1,22 @@
 import { ProductPrimitives } from '../../../entities/product.aggregate'
-import { BaseEvent } from '../../base.event'
+import { DomainEvent } from '../../domain-event'
 
-export class ProductUpdatedEvent extends BaseEvent {
+type Data = {
+  product: ProductPrimitives
+}
+
+export class ProductUpdatedEvent extends DomainEvent<Data, any> {
   constructor(public readonly product: ProductPrimitives) {
-    super();
+    super()
   }
 
-  /**
-   * Deserializes the event data from a JSON string or object.
-   * @param data The serialized event data
-   */
-  static deserialize(data: any): ProductUpdatedEvent {
-    return new ProductUpdatedEvent(data.product);
+  static deserialize(data: Data): ProductUpdatedEvent {
+    return new ProductUpdatedEvent(data.product)
   }
 
-  /**
-   * Serializes the event to a JSON-compatible object.
-   */
-  serialize(): any {
+  serialize(): Data {
     return {
-      product: this.product
-    };
+      product: this.product,
+    }
   }
 }

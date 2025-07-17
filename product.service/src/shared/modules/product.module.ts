@@ -4,17 +4,17 @@ import { KafkaModule } from '../kafka/kafka.module'
 import { CqrsModule, EventBus } from '@nestjs/cqrs'
 import { PRODUCT_REPOSITORY } from '../../domain/repositories/product.repository'
 import { ProductPrismaRepository } from '../../infrastructure/repositories/product-prisma.repositories'
-import { KafkaPublisher } from '../kafka/kafka.publisher'
-import { KafkaSubscriber } from '../kafka/kafka.subscriber'
 import { ProductCreatedEvent } from '../../domain/events/products/product-created/product-created.event'
 import { ProductUpdatedEvent } from '../../domain/events/products/product-updated/product-updated.event'
 import { ProductDeletedEvent } from '../../domain/events/products/product-deleted/product-deleted.event'
 import { commandHandlers } from '../../applications/commands'
 import { queryHandlers } from '../../applications/queries'
 import { eventHandlers } from '../../domain/events'
+import { ClientKafka } from '@nestjs/microservices'
+import { PrismaModule } from '../prisma/prisma.module'
 
 @Module({
-  imports: [KafkaModule, CqrsModule],
+  imports: [KafkaModule, CqrsModule, PrismaModule],
   controllers: [ProductController],
   providers: [
     {
@@ -25,25 +25,22 @@ import { eventHandlers } from '../../domain/events'
       provide: 'EVENTS',
       useValue: [ProductCreatedEvent, ProductUpdatedEvent, ProductDeletedEvent],
     },
+    {
+      provide: 'KAFKA_CLIENT',
+      useFactory: () => {
+        return new ClientKafka({
+          client: {
+            brokers: ['localhost:9092'],
+          },
+          consumer: {
+            groupId: 'client-consumer',
+          },
+        })
+      },
+    },
     ...commandHandlers,
     ...queryHandlers,
     ...eventHandlers,
-    KafkaPublisher,
-    KafkaSubscriber,
   ],
 })
-export class ProductModule implements OnModuleInit {
-  constructor(
-    private readonly event$: EventBus,
-    private readonly kafkaPublisher: KafkaPublisher,
-    private readonly kafkaSubscriber: KafkaSubscriber,
-  ) {}
-
-  async onModuleInit(): Promise<any> {
-    await this.kafkaSubscriber.connect()
-    this.kafkaSubscriber.bridgeEventsTo(this.event$.subject$)
-
-    await this.kafkaPublisher.connect()
-    this.event$.publisher = this.kafkaPublisher
-  }
-}
+export class ProductModule {}

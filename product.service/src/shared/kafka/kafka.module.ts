@@ -1,21 +1,21 @@
 import { Module } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
-import { KafkaPublisher } from './kafka.publisher'
-import { KafkaSubscriber } from './kafka.subscriber'
-import { ProductCreatedEvent } from '../../domain/events/products/product-created/product-created.event'
-import { ProductUpdatedEvent } from '../../domain/events/products/product-updated/product-updated.event'
-import { ProductDeletedEvent } from '../../domain/events/products/product-deleted/product-deleted.event'
+import { Kafka } from 'kafkajs'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+import { KafkaProducer } from './kafka.producer'
+import { KafkaConsumer } from './kafka.consumer'
 
 @Module({
-  imports: [ConfigModule.forRoot()],
+  imports: [ConfigModule],
   providers: [
-    KafkaSubscriber,
-    KafkaPublisher,
     {
-      provide: 'EVENTS',
-      useValue: [ProductCreatedEvent, ProductUpdatedEvent, ProductDeletedEvent],
+      provide: 'KAFKA_BROKER',
+      useFactory: (config: ConfigService) =>
+        new Kafka({ brokers: [config.get<string>('KAFKA_BROKER', 'event_bus:9092')] }),
+      inject: [ConfigService],
     },
+    KafkaProducer,
+    KafkaConsumer,
   ],
-  exports: [KafkaPublisher, KafkaSubscriber],
+  exports: [KafkaProducer, KafkaConsumer],
 })
 export class KafkaModule {}
