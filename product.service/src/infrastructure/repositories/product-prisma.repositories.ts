@@ -48,6 +48,7 @@ export class ProductPrismaRepository implements ProductRepository {
         status: product.status,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
+        version_occ: 1,
       },
     })
 
@@ -55,12 +56,30 @@ export class ProductPrismaRepository implements ProductRepository {
   }
 
   async update(id: string, data: ProductPrimitives): Promise<ProductPrimitives> {
-    const record = await this.prisma.product.update({
-      where: { id },
-      data: data,
+    const record = await this.prisma.product.findFirst({
+      where: { id: id },
     })
 
-    return this.mapToPrimitives(record)
+    if (!record) throw new ProductNotFoundException()
+
+    return this.prisma.product
+      .update({
+        where: { id, version_occ: record.version_occ },
+        data: {
+          name: data.name,
+          price: data.price,
+          description: data.description,
+          currency: data.currency,
+          image: data.image,
+          status: data.status,
+          updatedAt: data.updatedAt,
+          version_occ: record.version_occ + 1,
+        },
+      })
+      .then((record) => this.mapToPrimitives(record))
+      .catch(() => {
+        throw new ProductNotFoundException()
+      })
   }
 
   async findAll(filters: ProductFilters, pagination?: Pagination): Promise<ProductPrimitives[]> {
@@ -77,6 +96,18 @@ export class ProductPrismaRepository implements ProductRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await this.prisma.product.delete({ where: { id } })
+    const record = await this.prisma.product.findFirst({
+      where: { id },
+    })
+
+    if (!record) throw new ProductNotFoundException()
+
+    try {
+      await this.prisma.product.delete({
+        where: { id, version_occ: record.version_occ },
+      })
+    } catch (error) {
+      throw new ProductNotFoundException()
+    }
   }
 }

@@ -24,6 +24,8 @@ model Product {
   createdAt   DateTime
   updatedAt   DateTime
 
+  version_occ Int @map("_version")
+
   @@map("products")
 }
 
