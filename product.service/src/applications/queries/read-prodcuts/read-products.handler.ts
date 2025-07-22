@@ -11,6 +11,6 @@ export class ReadProductsHandler implements IQueryHandler<ReadProductsQuery> {
   ) {}
 
   execute(query: ReadProductsQuery): Promise<any> {
-    return this.productRepository.findAll({})
+    return this.productRepository.findAll({}, { page: query.page, limit: query.limit })
   }
 }

@@ -9,8 +9,8 @@ export type ProductFilters = {
 }
 
 export type Pagination = {
-  page: number
-  limit: number
+  page?: number
+  limit?: number
 }
 
 export const PRODUCT_REPOSITORY = Symbol('PRODUCT_REPOSITORY')

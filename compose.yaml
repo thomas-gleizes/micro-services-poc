@@ -53,7 +53,7 @@ services:
   product_service:
     build: .docker/node
     container_name: event_product_service
-    command: bash -c "yarn run start:dev"
+    command: bash -c "yarn install --immutable && yarn run start:dev"
     ports:
       - "3000:3000"
     working_dir: "/var/www/product.service"

@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { CreateProductCommand } from '../../applications/commands/create-product/create-product.command'
 import { CreateProductDto } from '../dtos/create-product.dto'
@@ -22,8 +33,8 @@ export class ProductController {
 
   @Get('products')
   @HttpCode(HttpStatus.OK)
-  index() {
-    return this.queryBus.execute(new ReadProductsQuery())
+  index(@Query('page') page: number, @Query('limit') limit: number) {
+    return this.queryBus.execute(new ReadProductsQuery(page, limit))
   }
 
   @Get('products/:id')

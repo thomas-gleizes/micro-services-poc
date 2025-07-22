@@ -1,10 +1,10 @@
-@id = b91f1441-b466-478b-ba84-8b563e06d17e
+@id = 12cce1ff-e1b1-43c8-9353-5a85c6a5539c
 
 ### GET a product by ID
 GET {{baseURL}}/products/{{id}}
 
 ### GET all products
-GET {{baseURL}}/products
+GET {{baseURL}}/products?page=1&limit=20
 
 ### POST product
 POST {{baseURL}}/products
