@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common'
 import { Prisma, ProductSchema } from '@prisma/client'
 import { Pagination, ProductFilters, ProductRepository } from '../../domain/repositories/product.repository'
 import { ProductStatus } from '../../domain/enums/product-status.enum'
-import { ProductNotFoundException } from '../../domain/execptions/product-not-found.expetion'
 import { PrismaService } from '../../shared/prisma/prisma.service'
 import { Product, ProductProps } from '../../domain/entities/product.entity'
+import { ProductNotFoundException } from '../../domain/exceptions/product-not-found.exceptions'
+import { ConflictUpdateException } from '../exceptions/conflict-update.exception'
 
 @Injectable()
 export class ProductPrismaRepository implements ProductRepository {
@@ -62,26 +63,25 @@ export class ProductPrismaRepository implements ProductRepository {
 
     if (!record) throw new ProductNotFoundException()
 
-    return this.prisma.productSchema
-      .update({
-        where: { id, occVersion: record.occVersion },
-        data: {
-          name: data.name,
-          price: data.price,
-          description: data.description,
-          currency: data.currency,
-          image: data.image,
-          status: data.status,
-          updatedAt: data.updatedAt,
-          occVersion: {
-            increment: 1,
-          },
+    const updateRecord = await this.prisma.productSchema.update({
+      where: { id, occVersion: record.occVersion },
+      data: {
+        name: data.name,
+        price: data.price,
+        description: data.description,
+        currency: data.currency,
+        image: data.image,
+        status: data.status,
+        updatedAt: data.updatedAt,
+        occVersion: {
+          increment: 1,
         },
-      })
-      .then((record) => this.mapToEntity(record))
-      .catch(() => {
-        throw new ProductNotFoundException()
-      })
+      },
+    })
+
+    if (!updateRecord) throw new ConflictUpdateException()
+
+    return this.mapToEntity(updateRecord)
   }
 
   async findAll(filters: ProductFilters, pagination?: Pagination): Promise<Product[]> {
@@ -104,12 +104,10 @@ export class ProductPrismaRepository implements ProductRepository {
 
     if (!record) throw new ProductNotFoundException()
 
-    try {
-      await this.prisma.productSchema.delete({
-        where: { id, occVersion: record.occVersion },
-      })
-    } catch (error) {
-      throw new ProductNotFoundException()
-    }
+    const result = await this.prisma.productSchema.delete({
+      where: { id, occVersion: record.occVersion },
+    })
+
+    if (result) throw new ConflictUpdateException()
   }
 }
