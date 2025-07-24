@@ -1,7 +1,7 @@
 import { CommandHandler, EventPublisher, ICommandHandler } from '@nestjs/cqrs'
 import { DeleteProductCommand } from './delete-product.commend'
 import { PRODUCT_REPOSITORY, ProductRepository } from '../../../domain/repositories/product.repository'
-import { ProductAggregate } from '../../../domain/entities/product.aggregate'
+import { ProductAggregate } from '../../../domain/aggregates/product.aggregate'
 import { Inject } from '@nestjs/common'
 
 @CommandHandler(DeleteProductCommand)

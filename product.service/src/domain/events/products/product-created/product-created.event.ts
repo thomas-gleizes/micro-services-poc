@@ -1,12 +1,12 @@
-import { ProductPrimitives } from '../../../entities/product.aggregate'
 import { DomainEvent } from '../../domain-event'
+import { ProductProps } from '../../../entities/product.entity'
 
 type SerializedEvent = {
-  product: ProductPrimitives
+  product: ProductProps
 }
 
 export class ProductCreatedEvent extends DomainEvent<SerializedEvent, ProductCreatedEvent> {
-  constructor(public readonly product: ProductPrimitives) {
+  constructor(public readonly product: ProductProps) {
     super()
   }
 

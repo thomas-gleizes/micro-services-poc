@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common'
-import { Product, Prisma } from '@prisma/client'
+import { Prisma, ProductSchema } from '@prisma/client'
 import { Pagination, ProductFilters, ProductRepository } from '../../domain/repositories/product.repository'
-import { ProductPrimitives } from 'src/domain/entities/product.aggregate'
 import { ProductStatus } from '../../domain/enums/product-status.enum'
 import { ProductNotFoundException } from '../../domain/execptions/product-not-found.expetion'
 import { PrismaService } from '../../shared/prisma/prisma.service'
+import { Product, ProductProps } from '../../domain/entities/product.entity'
 
 @Injectable()
 export class ProductPrismaRepository implements ProductRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  private mapToPrimitives(record: Product): ProductPrimitives {
-    return {
+  private mapToEntity(record: ProductSchema): Product {
+    return new Product({
       id: record.id,
       name: record.name,
       price: record.price,
@@ -21,23 +21,23 @@ export class ProductPrismaRepository implements ProductRepository {
       status: record.status as ProductStatus,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
-    }
+    })
   }
 
-  private buildFilters(filters: ProductFilters): Prisma.ProductWhereInput {
+  private buildFilters(filters: ProductFilters): Prisma.ProductSchemaWhereInput {
     return filters
   }
 
-  async findById(id: string): Promise<ProductPrimitives> {
-    const product = await this.prisma.product.findUnique({ where: { id } })
+  async findById(id: string): Promise<Product> {
+    const product = await this.prisma.productSchema.findUnique({ where: { id } })
 
     if (!product) throw new ProductNotFoundException()
 
-    return this.mapToPrimitives(product)
+    return this.mapToEntity(product)
   }
 
-  async save(product: ProductPrimitives): Promise<ProductPrimitives> {
-    const record = await this.prisma.product.create({
+  async save(product: Product): Promise<Product> {
+    const record = await this.prisma.productSchema.create({
       data: {
         id: product.id,
         name: product.name,
@@ -48,23 +48,23 @@ export class ProductPrismaRepository implements ProductRepository {
         status: product.status,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
-        version_occ: 1,
+        occVersion: 1,
       },
     })
 
-    return this.mapToPrimitives(record)
+    return this.mapToEntity(record)
   }
 
-  async update(id: string, data: ProductPrimitives): Promise<ProductPrimitives> {
-    const record = await this.prisma.product.findFirst({
+  async update(id: string, data: ProductProps): Promise<Product> {
+    const record = await this.prisma.productSchema.findFirst({
       where: { id: id },
     })
 
     if (!record) throw new ProductNotFoundException()
 
-    return this.prisma.product
+    return this.prisma.productSchema
       .update({
-        where: { id, version_occ: record.version_occ },
+        where: { id, occVersion: record.occVersion },
         data: {
           name: data.name,
           price: data.price,
@@ -73,38 +73,40 @@ export class ProductPrismaRepository implements ProductRepository {
           image: data.image,
           status: data.status,
           updatedAt: data.updatedAt,
-          version_occ: record.version_occ + 1,
+          occVersion: {
+            increment: 1,
+          },
         },
       })
-      .then((record) => this.mapToPrimitives(record))
+      .then((record) => this.mapToEntity(record))
       .catch(() => {
         throw new ProductNotFoundException()
       })
   }
 
-  async findAll(filters: ProductFilters, pagination?: Pagination): Promise<ProductPrimitives[]> {
+  async findAll(filters: ProductFilters, pagination?: Pagination): Promise<Product[]> {
     const limit = pagination?.limit || 10
     const page = pagination?.page || 0
 
-    const records = await this.prisma.product.findMany({
+    const records = await this.prisma.productSchema.findMany({
       where: this.buildFilters(filters),
       skip: page * limit,
       take: limit,
     })
 
-    return records.map((record) => this.mapToPrimitives(record))
+    return records.map((record) => this.mapToEntity(record))
   }
 
   async delete(id: string): Promise<void> {
-    const record = await this.prisma.product.findFirst({
+    const record = await this.prisma.productSchema.findFirst({
       where: { id },
     })
 
     if (!record) throw new ProductNotFoundException()
 
     try {
-      await this.prisma.product.delete({
-        where: { id, version_occ: record.version_occ },
+      await this.prisma.productSchema.delete({
+        where: { id, occVersion: record.occVersion },
       })
     } catch (error) {
       throw new ProductNotFoundException()

@@ -1,7 +1,7 @@
 import { CommandHandler, EventPublisher, ICommandHandler } from '@nestjs/cqrs'
 import { UpdateProductCommand } from './update-product.command'
 import { PRODUCT_REPOSITORY, ProductRepository } from '../../../domain/repositories/product.repository'
-import { ProductAggregate } from '../../../domain/entities/product.aggregate'
+import { ProductAggregate } from '../../../domain/aggregates/product.aggregate'
 import { Inject } from '@nestjs/common'
 
 @CommandHandler(UpdateProductCommand)
@@ -13,18 +13,18 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
   ) {}
 
   async execute(command: UpdateProductCommand) {
-    const primitives = await this.productRepository.findById(command.productId)
-    const aggregate = this.publisher.mergeObjectContext(new ProductAggregate(primitives))
+    const product = await this.productRepository.findById(command.productId)
+    const aggregate = this.publisher.mergeObjectContext(new ProductAggregate(product))
 
-    aggregate.price = command.data.price
-    aggregate.name = command.data.name
-    aggregate.description = command.data.description
-    aggregate.image = command.data.image
-    aggregate.currency = command.data.currency
+    product.price = command.data.price
+    product.name = command.data.name
+    product.description = command.data.description
+    product.image = command.data.image
+    product.currency = command.data.currency
 
     aggregate.update()
     aggregate.commit()
 
-    return aggregate.toPrimitives()
+    return product.toPrimitives()
   }
 }

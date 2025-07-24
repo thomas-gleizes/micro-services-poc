@@ -13,7 +13,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Product {
+model ProductSchema {
   id          String        @id
   name        String
   description String
@@ -24,7 +24,7 @@ model Product {
   createdAt   DateTime
   updatedAt   DateTime
 
-  version_occ Int @map("_version")
+  occVersion Int @map("occ_version")
 
   @@map("products")
 }

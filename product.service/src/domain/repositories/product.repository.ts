@@ -1,5 +1,5 @@
-import { ProductPrimitives } from '../entities/product.aggregate'
 import { ProductStatus } from '../enums/product-status.enum'
+import { Product, ProductProps } from '../entities/product.entity'
 
 export type ProductFilters = {
   name?: string
@@ -16,13 +16,13 @@ export type Pagination = {
 export const PRODUCT_REPOSITORY = Symbol('PRODUCT_REPOSITORY')
 
 export interface ProductRepository {
-  findById(id: string): Promise<ProductPrimitives>
+  findById(id: string): Promise<Product>
 
-  save(product: ProductPrimitives): Promise<ProductPrimitives>
+  save(product: ProductProps): Promise<Product>
 
-  update(id: string, product: ProductPrimitives): Promise<ProductPrimitives>
+  update(id: string, product: ProductProps): Promise<Product>
 
-  findAll(filters: ProductFilters, pagination?: Pagination): Promise<ProductPrimitives[]>
+  findAll(filters: ProductFilters, pagination?: Pagination): Promise<Product[]>
 
   delete(id: string): Promise<void>
 }
