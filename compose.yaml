@@ -56,9 +56,9 @@ services:
     command: bash -c "yarn install --immutable && yarn run start:dev"
     ports:
       - "3000:3000"
-    working_dir: "/var/www/product.service"
+    working_dir: "/var/www/app"
     volumes:
-      - ./product.service:/var/www/product.service
+      - ./services/product.service:/var/www/app
     networks:
       reverse-proxy:
         aliases:

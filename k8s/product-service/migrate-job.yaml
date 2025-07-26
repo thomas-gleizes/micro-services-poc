@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: prisma-migrate
+spec:
+  template:
+    spec:
+      containers:
+        - name: prisma-migrate
+          image: product-service:latest
+          imagePullPolicy: Never
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://product:password@product-db:5432/product?schema=public"
+          command:
+            - sh
+            - -c
+            - |
+              echo "🔄 Running Prisma migrations..."
+              npx prisma migrate deploy
+              echo "✅ Setup completed!"
+      restartPolicy: OnFailure
+  backoffLimit: 3

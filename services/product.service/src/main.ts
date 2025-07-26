@@ -13,6 +13,11 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }))
   app.useGlobalInterceptors(new HttpLoggingInterceptor())
 
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down gracefully')
+    app.close()
+  })
+
   await app.listen(config.get<number>('PORT', 3000))
 }
 
