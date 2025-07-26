@@ -1,0 +1,10 @@
+node_modules
+dist
+coverage
+.yarn
+.git
+.gitignore
+
+*.http
+.env
+.nyc_output
