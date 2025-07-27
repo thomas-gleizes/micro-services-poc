@@ -6,10 +6,9 @@ import { KafkaProducer } from '../kafka/kafka.producer'
 import { KafkaConsumer } from '../kafka/kafka.consumer'
 import { randomUUID } from 'node:crypto'
 import { EventEmitter } from 'node:events'
-import { ReadProductsQueryReply } from '../../applications/queries/read-prodcuts/read-products.query'
 import { ConfigService } from '@nestjs/config'
 import { QueryTimeoutException } from './query-timeout.exception'
-import { DiscoveryService, MetadataScanner } from '@nestjs/core'
+import { DiscoveryService } from '@nestjs/core'
 import { QUERY_HANDLER_METADATA } from '@nestjs/cqrs/dist/decorators/constants'
 
 export interface QueryBase extends IQuery, Message {}
@@ -86,7 +85,10 @@ export class MessagingQueryBus implements IQueryBus<QueryBase>, OnModuleInit {
     const queryId = randomUUID()
 
     const promise = new Promise<TResult>((resolve, reject) => {
-      setTimeout(() => reject(new QueryTimeoutException()), this.config.get<number>('QUERY_TIMEOUT', 30_000))
+      setTimeout(
+        () => reject(new QueryTimeoutException()),
+        this.config.get<number>('QUERY_TIMEOUT', 30_000),
+      )
       this.eventEmitter.once(queryId, resolve)
     })
 
