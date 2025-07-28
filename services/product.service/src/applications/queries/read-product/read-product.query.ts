@@ -1,7 +1,14 @@
 import { IQuery } from '@nestjs/cqrs'
+import { Message } from '../../../shared/messaging/message.interface'
 
-export class ReadProductQuery implements IQuery {
-  constructor(public readonly productId: string) {}
+export class ReadProductQuery extends Message implements IQuery {
+  constructor(public readonly productId: string) {
+    super()
+  }
 }
 
-export class ReadProductQueryReply {}
+export class ReadProductQueryReply extends Message {
+  constructor() {
+    super()
+  }
+}

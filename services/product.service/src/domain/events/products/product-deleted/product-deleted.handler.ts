@@ -11,6 +11,7 @@ export class ProductDeletedHandler implements IEventHandler<ProductDeletedEvent>
   ) {}
 
   async handle(event: ProductDeletedEvent) {
+    console.log('WTF', event)
     await this.productRepository.delete(event.productId)
   }
 }

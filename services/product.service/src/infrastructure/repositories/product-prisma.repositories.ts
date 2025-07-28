@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma, ProductSchema } from '@prisma/client'
-import { Pagination, ProductFilters, ProductRepository } from '../../domain/repositories/product.repository'
+import {
+  Pagination,
+  ProductFilters,
+  ProductRepository,
+} from '../../domain/repositories/product.repository'
 import { ProductStatus } from '../../domain/enums/product-status.enum'
 import { PrismaService } from '../../shared/prisma/prisma.service'
 import { Product, ProductProps } from '../../domain/entities/product.entity'
@@ -98,7 +102,7 @@ export class ProductPrismaRepository implements ProductRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const record = await this.prisma.productSchema.findFirst({
+    const record = await this.prisma.productSchema.findUnique({
       where: { id },
     })
 

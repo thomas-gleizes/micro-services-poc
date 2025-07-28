@@ -1,22 +1,27 @@
 import { Module, OnModuleInit, DynamicModule, Global } from '@nestjs/common'
 import { KafkaModule } from '../kafka/kafka.module'
-import { QueryBus, CqrsModule, EventBus, EventPublisher } from '@nestjs/cqrs'
+import { QueryBus, CqrsModule, EventBus, EventPublisher, CommandBus } from '@nestjs/cqrs'
 import { MessagingQueryBus } from './messaging-query.bus'
 import { ConfigModule } from '@nestjs/config'
 import { DiscoveryModule } from '@nestjs/core'
-import { MessagingSubscriber } from './messaging.subscriber'
+import { MessagingEventSubscriber } from './messaging.event.subscriber'
 import { MessagingEventPublisher } from './messaging-event.publisher'
 import { productEvents } from '../../domain/events'
+import { MessagingCommandBus } from './messaging-command.bus'
 
 @Global()
 @Module({
   imports: [KafkaModule, ConfigModule, DiscoveryModule, CqrsModule],
   providers: [
     MessagingEventPublisher,
-    MessagingSubscriber,
+    MessagingEventSubscriber,
     {
       provide: QueryBus,
       useClass: MessagingQueryBus,
+    },
+    {
+      provide: CommandBus,
+      useClass: MessagingCommandBus,
     },
     {
       provide: 'EVENTS',
@@ -28,39 +33,14 @@ import { productEvents } from '../../domain/events'
     },
     EventPublisher,
   ],
-  exports: [QueryBus, EventPublisher, MessagingEventPublisher],
+  exports: [QueryBus, CommandBus, EventPublisher, MessagingEventPublisher],
 })
 export class MessagingModule implements OnModuleInit {
   constructor(
-    private readonly subscriber: MessagingSubscriber,
+    private readonly subscriber: MessagingEventSubscriber,
     private readonly eventPublisher: MessagingEventPublisher,
     private readonly eventBus: EventBus,
   ) {}
-
-  static forRoot(): DynamicModule {
-    return {
-      module: MessagingModule,
-      imports: [CqrsModule.forRoot()],
-      providers: [
-        MessagingEventPublisher,
-        MessagingSubscriber,
-        {
-          provide: QueryBus,
-          useClass: MessagingQueryBus,
-        },
-        {
-          provide: EventPublisher,
-          useClass: MessagingEventPublisher,
-        },
-        {
-          provide: 'EVENTS',
-          useValue: [...productEvents],
-        },
-      ],
-      exports: [QueryBus, EventPublisher, MessagingEventPublisher],
-      global: true,
-    }
-  }
 
   async onModuleInit() {
     await this.subscriber.connect()

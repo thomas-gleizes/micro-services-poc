@@ -39,13 +39,12 @@ export class KafkaConsumer implements OnModuleInit, OnModuleDestroy {
     await this.consumer.stop()
     this.handlers.set(options.topic, handler)
     await this.consumer.subscribe({ topic: options.topic, fromBeginning: options.fromBeginning })
-    await this.consumer.run()
   }
 
   public async run() {
-    await this.consumer.stop()
     await this.consumer.run({
-      eachMessage: async ({ topic, message }) => {
+      autoCommit: false,
+      eachMessage: async ({ topic, message, partition }) => {
         this._logger.debug(topic)
         if (!message.value) return
 
@@ -65,6 +64,14 @@ export class KafkaConsumer implements OnModuleInit, OnModuleDestroy {
             await handler({ topic, message: deserializeMessage, metadata })
           }
         }
+
+        await this.consumer.commitOffsets([
+          {
+            topic,
+            partition,
+            offset: (+message.offset + 1).toString(),
+          },
+        ])
       },
     })
   }
