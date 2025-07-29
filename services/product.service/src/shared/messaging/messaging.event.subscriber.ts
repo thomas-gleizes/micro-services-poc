@@ -22,7 +22,6 @@ export class MessagingEventSubscriber implements IMessageSource {
           if (event.name === topic) {
             return this.bridge.next(event.deserialize(message as Serializable))
           }
-          throw new Error('EVENT not found')
         }
       },
     )

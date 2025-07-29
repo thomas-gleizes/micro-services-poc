@@ -17,6 +17,7 @@ export class KafkaProducer {
 
   async send<T = unknown>(topic: string, message: T, metadata?: Record<string, string>) {
     this._logger.debug(topic)
+
     await this.producer.send({
       topic: topic,
       messages: [{ value: JSON.stringify(message), headers: metadata }],

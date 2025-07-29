@@ -5,9 +5,15 @@ import { MessagingModule } from './shared/messaging/messaging.module'
 import { HealthController } from './presentation/controllers/health.controller'
 import { KafkaModule } from './shared/kafka/kafka.module'
 import { KafkaConsumer } from './shared/kafka/kafka.consumer'
+import { envSchema } from './shared/environement/env'
 
 @Module({
-  imports: [ConfigModule.forRoot(), KafkaModule, MessagingModule, ProductModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true, validationSchema: envSchema }),
+    KafkaModule,
+    MessagingModule,
+    ProductModule,
+  ],
   providers: [],
   controllers: [HealthController],
 })

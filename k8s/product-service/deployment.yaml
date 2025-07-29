@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: product-service
-        image: product-service:latest
+        image: product-service:prod
         imagePullPolicy: Never
         ports:
         - containerPort: 3000
@@ -33,6 +33,8 @@ spec:
           value: "45000"
         - name: NODE_ENV
           value: "production"
+        - name: KAFKA_CONSUMER_GROUP
+          value: product_service
         livenessProbe:
           httpGet:
             path: /health-check

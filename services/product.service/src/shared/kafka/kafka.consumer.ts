@@ -1,6 +1,7 @@
 import { Inject, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
 import { Consumer, Kafka } from 'kafkajs'
 import { Serializable } from '../messaging/message.interface'
+import { ConfigService } from '@nestjs/config'
 
 type MessageHandler = (message: {
   topic: string
@@ -13,11 +14,15 @@ export class KafkaConsumer implements OnModuleInit, OnModuleDestroy {
   private readonly consumer: Consumer
   private readonly handlers = new Map<string | RegExp, MessageHandler>()
 
-  constructor(@Inject('KAFKA_BROKER') broker: Kafka) {
+  constructor(@Inject('KAFKA_BROKER') broker: Kafka, config: ConfigService) {
     this._logger.debug('INSTANCY CONSUMER')
     this.consumer = broker.consumer({
-      groupId: 'questionnaire-service',
-      allowAutoTopicCreation: true,
+      groupId: config.get<string>('KAFKA_CONSUMER_GROUP')!,
+      allowAutoTopicCreation: false,
+      retry: {
+        retries: config.get<number>('KAFKA_CONSUMER_RETRIES'),
+        initialRetryTime: config.get<number>('KAFKA_CONSUMER_INITIAL_RETRY_TIME'),
+      },
     })
   }
 
@@ -46,22 +51,23 @@ export class KafkaConsumer implements OnModuleInit, OnModuleDestroy {
       autoCommit: false,
       eachMessage: async ({ topic, message, partition }) => {
         this._logger.debug(topic)
-        if (!message.value) return
 
-        const metadata = Object.fromEntries(
-          Object.entries(message.headers || {}).map(([key, value]) => [
-            key,
-            Buffer.isBuffer(value) ? value.toString() : value ?? '',
-          ]),
-        ) as { [key: string]: string }
+        if (message.value) {
+          const metadata = Object.fromEntries(
+            Object.entries(message.headers || {}).map(([key, value]) => [
+              key,
+              Buffer.isBuffer(value) ? value.toString() : (value ?? ''),
+            ]),
+          ) as { [key: string]: string }
 
-        const deserializeMessage = JSON.parse(message.value.toString()) as Serializable
+          const deserializeMessage = JSON.parse(message.value.toString()) as Serializable
 
-        for (const [key, handler] of this.handlers.entries()) {
-          if (key === topic) await handler({ topic, message: deserializeMessage, metadata })
+          for (const [key, handler] of this.handlers.entries()) {
+            if (key === topic) await handler({ topic, message: deserializeMessage, metadata })
 
-          if (typeof key === 'object' && (key as RegExp).test(topic)) {
-            await handler({ topic, message: deserializeMessage, metadata })
+            if (typeof key === 'object' && (key as RegExp).test(topic)) {
+              await handler({ topic, message: deserializeMessage, metadata })
+            }
           }
         }
 
@@ -72,6 +78,7 @@ export class KafkaConsumer implements OnModuleInit, OnModuleDestroy {
             offset: (+message.offset + 1).toString(),
           },
         ])
+        this._logger.debug(`${topic} COMMITED`)
       },
     })
   }

@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: prisma-migrate
-          image: product-service:latest
+          image: product-service:prod
           imagePullPolicy: Never
           env:
             - name: DATABASE_URL
