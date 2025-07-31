@@ -2,7 +2,9 @@
 
 ## Aperçu
 
-Ce document décrit l'architecture interne de nos microservices. Il fournit un modèle pour construire des microservices pilotés par le domaine, basés sur l'event sourcing, en utilisant une architecture en couches avec une séparation claire des préoccupations.
+Ce document décrit l'architecture interne de nos microservices. Il fournit un modèle pour construire des microservices
+pilotés par le domaine, basés sur l'event sourcing, en utilisant une architecture en couches avec une séparation claire
+des préoccupations.
 
 ## Principes Architecturaux
 
@@ -26,10 +28,8 @@ La couche de domaine est le cœur de l'application, contenant la logique métier
 
 - **Entités** : Objets de domaine avec identité et cycle de vie
 - **Agrégats** : Groupes d'objets de domaine traités comme une unité unique
-- **Objets de Valeur** : Objets immuables sans identité
 - **Événements de Domaine** : Enregistrements immuables de quelque chose qui s'est produit dans le domaine
 - **Interfaces de Dépôt** : Abstractions pour l'accès aux données
-- **Services de Domaine** : Opérations qui ne s'intègrent pas naturellement dans une entité ou un objet de valeur
 - **Exceptions de Domaine** : Exceptions personnalisées spécifiques aux règles de domaine
 
 ### 2. Couche d'Application
@@ -64,50 +64,46 @@ La couche de présentation gère les requêtes et réponses HTTP.
 - **Contrôleurs** : Gèrent les requêtes HTTP et délèguent à la couche d'application
 - **DTOs (Objets de Transfert de Données)** : Structures pour l'échange de données avec les clients
 - **Validateurs** : Valident les données entrantes
-- **Filtres** : Traitent les requêtes et les réponses
+- **Filtres** : Gestions des erreurs HTTP
 
 ## Flux de Contrôle
 
 ### Flux de Commande (Opérations d'Écriture)
 
-1. Le client envoie une requête à un contrôleur
-2. Le contrôleur crée une commande et l'envoie au bus de commande
-3. Le bus de commande route la commande vers le gestionnaire de commande approprié
+1. Le client envoie la requête à l'api gateway
+2. L'api gateway envoie la commande dans le bus kafka
+3. Le service consume le message est execute la commande
 4. Le gestionnaire de commande :
-   - Récupère l'agrégat du dépôt (si mise à jour)
-   - Crée un nouvel agrégat (si création)
-   - Applique la logique métier
-   - Applique les événements de domaine à l'agrégat
-   - Sauvegarde l'agrégat dans le dépôt
+    - Récupère l'agrégat du dépôt (si mise à jour)
+    - Crée un nouvel agrégat (si création)
+    - Applique la logique métier
+    - Applique les événements de domaine à l'agrégat
+    - Retourne la donnée
 5. Les événements de domaine sont publiés sur le bus d'événements
-6. Les gestionnaires d'événements traitent les événements (par exemple, mise à jour des modèles de lecture, déclenchement d'effets secondaires)
+6. Les gestionnaires d'événements traitent les événements (par exemple, mise à jour des modèles de lecture,
+   déclenchement d'effets secondaires)
+7. Le service publie un message de réponse pour l'api gateway avec la donnée de la commande
 
 ### Flux de Requête (Opérations de Lecture)
 
-1. Le client envoie une requête à un contrôleur
-2. Le contrôleur crée une requête et l'envoie au bus de requête
-3. Le bus de requête route la requête vers le gestionnaire de requête approprié
+1. Le client envoie une requête à l'api gateway
+2. L'api gateway envoie la requête dans le bus kafka
+3. Le service consume la requête dans le bus kafka et route la requête vers le gestionnaire de requête approprié
 4. Le gestionnaire de requête récupère les données du dépôt ou du modèle de lecture
-5. Les données sont renvoyées au client
+5. Le service envoie la réponse dans le bus kafka avec les données a destionnation de l'api gateway
+6. L'api gateway répond au client
 
 ## Event Sourcing
 
-Nos microservices utilisent l'event sourcing pour maintenir un historique complet de tous les changements d'état de l'application.
+Nos microservices utilisent l'event sourcing pour maintenir un historique complet de tous les changements d'état de
+l'application.
 
 ### Concepts Clés :
 
-- **Magasin d'Événements** : Stockage persistant pour les événements de domaine
+- **Store d'événements** : Stockage persistant pour les événements de domaine
 - **Flux d'Événements** : Séquence d'événements pour un agrégat spécifique
 - **Relecture d'Événements** : Reconstruction de l'état actuel en rejouant les événements
 - **Instantanés** : Captures périodiques de l'état de l'agrégat pour optimiser le chargement
-
-### Flux d'Événements :
-
-1. Les événements de domaine sont appliqués aux agrégats
-2. Les événements sont persistés dans le magasin d'événements
-3. Les événements sont publiés sur le bus d'événements
-4. Les gestionnaires d'événements traitent les événements pour mettre à jour les modèles de lecture ou déclencher des effets secondaires
-5. D'autres microservices peuvent s'abonner aux événements pour maintenir leur propre état
 
 ## Structure des Dossiers
 
@@ -118,10 +114,11 @@ src/
 │   │   └── [command-name]/
 │   │       ├── [command-name].command.ts
 │   │       └── [command-name].handler.ts
-│   └── queries/
-│       └── [query-name]/
-│           ├── [query-name].query.ts
-│           └── [query-name].handler.ts
+│   ├── queries/
+│   │   └── [query-name]/
+│   │       ├── [query-name].query.ts
+│   │       └── [query-name].handler.ts
+│   └── mappers ?
 ├── domain/
 │   ├── aggregates/
 │   │   └── [aggregate-name].aggregate.ts
@@ -155,47 +152,6 @@ src/
         └── [utility-name].util.ts
 ```
 
-## Modèles de Conception
-
-### Modèle de Dépôt
-
-Le modèle de dépôt fournit une interface de type collection pour accéder aux agrégats de domaine :
-
-- **Interface** : Définie dans la couche de domaine
-- **Implémentation** : Fournie dans la couche d'infrastructure
-- **Objectif** : Abstraire les détails d'accès aux données de la couche de domaine
-
-### Modèle de Fabrique
-
-Le modèle de fabrique est utilisé pour créer des objets de domaine complexes :
-
-- **Méthodes de Fabrique Statiques** : Méthodes comme `create()` sur les entités et les agrégats
-- **Objectif** : Encapsuler la logique de création et assurer un état d'objet valide
-
-### Modèle d'Agrégat
-
-Le modèle d'agrégat définit les limites de cohérence :
-
-- **Racine d'Agrégat** : Le point d'entrée de l'agrégat
-- **Invariants** : Règles métier qui doivent être maintenues
-- **Objectif** : Assurer la cohérence transactionnelle
-
-### Modèle de Commande
-
-Le modèle de commande encapsule une demande sous forme d'objet :
-
-- **Commande** : Structure de données représentant une intention
-- **Gestionnaire de Commande** : Traite la commande
-- **Objectif** : Découpler la demande de l'exécution
-
-### Modèle de Requête
-
-Le modèle de requête encapsule une demande de données :
-
-- **Requête** : Structure de données représentant une demande d'information
-- **Gestionnaire de Requête** : Traite la requête
-- **Objectif** : Découpler la récupération de données de la présentation
-
 ## Meilleures Pratiques
 
 ### Couche de Domaine
@@ -203,7 +159,6 @@ Le modèle de requête encapsule une demande de données :
 - Garder la couche de domaine libre des préoccupations d'infrastructure
 - Utiliser des modèles de domaine riches avec comportement
 - Encapsuler les règles métier dans les entités et les agrégats
-- Utiliser des objets de valeur pour les concepts sans identité
 - Définir des limites d'agrégat claires
 
 ### Couche d'Application
@@ -227,13 +182,3 @@ Le modèle de requête encapsule une demande de données :
 - Utiliser des DTOs pour l'échange de données avec les clients
 - Valider les données entrantes
 - Gérer les exceptions et renvoyer des codes d'état HTTP appropriés
-
-## Conclusion
-
-Cette architecture fournit une base solide pour construire des microservices évolutifs, maintenables et testables. En suivant ces modèles et pratiques, nous pouvons créer des microservices qui sont :
-
-- **Ciblés** : Chaque microservice a une responsabilité claire
-- **Indépendants** : Les microservices peuvent être développés, déployés et mis à l'échelle indépendamment
-- **Résilients** : Les défaillances sont isolées aux microservices individuels
-- **Évolutifs** : Les microservices peuvent être mis à l'échelle en fonction de leurs besoins spécifiques
-- **Maintenables** : Une séparation claire des préoccupations rend le code plus facile à comprendre et à modifier

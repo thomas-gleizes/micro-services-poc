@@ -1,7 +1,7 @@
-# k8s/postgres/postgres-pv.yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
+  namespace: product
   name: postgres-pv
 spec:
   capacity:
@@ -16,6 +16,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+  namespace: product
   name: postgres-pvc
 spec:
   accessModes:

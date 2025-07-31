@@ -1,14 +1,18 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
+  namespace: product
   name: prisma-migrate
 spec:
   template:
     spec:
+      imagePullSecrets:
+        - name: registry-secret
+
       containers:
         - name: prisma-migrate
-          image: product-service:prod
-          imagePullPolicy: Never
+          image: registry.thomasgleizes.fr/eventsourcing/product-service:prod
+          imagePullPolicy: Always
           env:
             - name: DATABASE_URL
               value: "postgresql://product:password@product-db:5432/product?schema=public"

@@ -1,7 +1,7 @@
-# k8s/postgres/postgres-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: product
   name: product-db
   labels:
     app: product-db

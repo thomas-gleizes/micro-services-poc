@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: product
+  name: product-service
+  labels:
+    app: product-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: product-service
+  template:
+    metadata:
+      labels:
+        app: product-service
+    spec:
+      imagePullSecrets:
+        - name: registry-secret
+
+      containers:
+        - name: product-service
+          image: registry.thomasgleizes.fr/eventsourcing/product-service:prod
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+            - name: DATABASE_URL
+              value: "postgresql://product:password@product-db:5432/product?schema=public"
+            - name: KAFKA_BROKER
+              value: "kafka:9092"
+            - name: KAFKA_GROUP_ID
+              value: "product_service"
+            - name: QUERY_TIMEOUT
+              value: "45000"
+            - name: NODE_ENV
+              value: "production"
+            - name: KAFKA_CONSUMER_GROUP
+              value: product_service
+          livenessProbe:
+            httpGet:
+              path: /health-check
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health-check
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 20
