@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: kafka
+  name: init-topics
+spec:
+  template:
+    spec:
+      containers:
+      - name: product-build
+        image: docker.io/library/alpine:latest
+        command: ["sh", "-c"]
+        args: [""]
