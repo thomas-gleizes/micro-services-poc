@@ -1,0 +1,32 @@
+---
+# System preparation tasks
+
+- name: Create file with current date
+  ansible.builtin.copy:
+    dest: "/tmp/date.txt"
+    content: "{{ lookup('pipe', 'date +%Y-%m-%d_%H-%M-%S') }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Update apt
+  apt:
+    update_cache: yes
+
+- name: Install required packages
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - gpg
+      - lsb-release
+    state: present
+
+- name: Enable IP forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    state: present
+    reload: yes
