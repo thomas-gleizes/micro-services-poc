@@ -15,3 +15,11 @@
     # Include Docker/containerd installation and configuration tasks
     - name: Containerd setup
       include_tasks: tasks/containerd_setup.yaml
+
+    # Include CNI setup tasks
+    - name: CNI setup
+      include_tasks: tasks/cni_setup.yaml
+
+    # Include control plane initialization tasks
+    - name: Control plane initialization
+      include_tasks: tasks/control_plane_init.yaml

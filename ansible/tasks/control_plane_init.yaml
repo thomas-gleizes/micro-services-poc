@@ -1,0 +1,61 @@
+---
+# Kubernetes control plane initialization tasks
+
+- name: Initialize Kubernetes control plane
+  ansible.builtin.shell: kubeadm init --pod-network-cidr=192.168.0.0/16
+  register: kubeadm_init
+  args:
+    creates: /etc/kubernetes/admin.conf
+
+- name: Create .kube directory for root user
+  ansible.builtin.file:
+    path: /root/.kube
+    state: directory
+    mode: '0700'
+
+- name: Copy Kubernetes admin.conf to root's .kube/config
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /root/.kube/config
+    remote_src: yes
+    mode: '0600'
+
+- name: Create .kube directory for current user
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.kube"
+    state: directory
+    mode: '0700'
+
+- name: Copy Kubernetes admin.conf to user's .kube/config
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ ansible_env.HOME }}/.kube/config"
+    remote_src: yes
+    mode: '0600'
+
+- name: Apply Calico CNI
+  ansible.builtin.shell: kubectl apply -f /tmp/calico.yaml
+  args:
+    creates: /var/log/calico_applied.log
+  register: calico_result
+
+- name: Mark Calico as applied
+  ansible.builtin.file:
+    path: /var/log/calico_applied.log
+    state: touch
+    mode: '0644'
+  when: calico_result.changed
+
+- name: Allow pods to run on control plane node (single node setup)
+  ansible.builtin.shell: kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+  args:
+    creates: /var/log/control_plane_untainted.log
+  register: untaint_result
+  ignore_errors: yes
+
+- name: Mark control plane as untainted
+  ansible.builtin.file:
+    path: /var/log/control_plane_untainted.log
+    state: touch
+    mode: '0644'
+  when: untaint_result.changed
