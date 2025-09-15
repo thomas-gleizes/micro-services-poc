@@ -2,7 +2,7 @@ volumes:
   kafka-data:
     driver: local
 
-  postgres_data:
+  product_db:
     driver: local
 
 networks:
@@ -59,6 +59,14 @@ services:
     working_dir: "/var/www/app"
     volumes:
       - ./services/product.service:/var/www/app
+    environment:
+      PORT: 3000
+      DATABASE_URL: "mongodb://root:example@localhost:27017/product_db"
+      KAFKA_BROKER: 'event_bus:9092'
+      KAFKA_CONSUMER_GROUP: 'product-group'
+      QUERY_TIMEOUT: 30000
+      KAFKA_CONSUMER_RETRIES: 10
+      KAFKA_CONSUMER_INITIAL_RETRY_TIME: 200
     networks:
       reverse-proxy:
         aliases:
@@ -68,17 +76,16 @@ services:
       - product_db
 
   product_db:
-    image: postgres:15
+    image: mongo:latest
     container_name: event_product_db
     restart: always
-    environment:
-      POSTGRES_USER: product
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: product
     ports:
-      - "5432:5432"
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - product_db:/data/db
     networks:
       reverse-proxy:
         aliases:

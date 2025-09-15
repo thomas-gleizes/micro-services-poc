@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { ProductStatus } from '../enums/product-status.enum'
+import { ProductStatus } from '../value-object/product-status.enum'
 import { ClassProps } from '../../../types/utils'
 
 export type ProductProps = ClassProps<Product>
