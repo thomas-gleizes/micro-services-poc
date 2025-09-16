@@ -5,6 +5,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { ProductSchema } from '../schemas/product.schema'
 import { Repository } from 'typeorm'
+import { ProductId } from '../../domain/value-object/product-id.vo'
 
 @Injectable()
 export class ProductMongoCommandRepository implements ProductCommandRepository {
@@ -13,21 +14,24 @@ export class ProductMongoCommandRepository implements ProductCommandRepository {
     private readonly productRepo: Repository<ProductSchema>,
   ) {}
 
-  findById(id: string): Promise<ProductAggregate | null> {
-    const record = this.productRepo.findBy({ id: id })
-
-    throw new Error('Method not implemented.')
+  findById(id: ProductId): Promise<ProductAggregate | null> {
+    console.log(id)
+    return Promise.resolve(null)
   }
 
   save(product: ProductProps): Promise<ProductAggregate | null> {
-    throw new Error('Method not implemented.')
+    console.log(product)
+    return Promise.resolve(null)
   }
 
-  update(id: string, product: ProductProps): Promise<ProductAggregate | null> {
-    throw new Error('Method not implemented.')
+  update(id: ProductId, product: ProductProps): Promise<ProductAggregate | null> {
+    console.log(id, product)
+
+    return Promise.resolve(null)
   }
 
-  delete(id: string): Promise<void> {
-    throw new Error('Method not implemented.')
+  delete(id: ProductId): Promise<void> {
+    console.log(id)
+    return Promise.resolve()
   }
 }

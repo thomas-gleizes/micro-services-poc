@@ -4,8 +4,10 @@ import { Inject } from '@nestjs/common'
 import {
   PRODUCT_QUERY_REPOSITORY,
   ProductQueryRepository,
-  ReadProduct,
+  ReadProductModel,
 } from '../../../domain/repositories/product-query.repository'
+import { ProductId } from '../../../domain/value-object/product-id.vo'
+import { ProductNotFoundException } from '../../../domain/exceptions/product-not-found.exceptions'
 
 @QueryHandler(ReadProductQuery)
 export class ReadProductHandler implements IQueryHandler<ReadProductQuery> {
@@ -14,7 +16,12 @@ export class ReadProductHandler implements IQueryHandler<ReadProductQuery> {
     private readonly productRepository: ProductQueryRepository,
   ) {}
 
-  execute(query: ReadProductQuery): Promise<ReadProduct> {
-    return this.productRepository.findById(query.productId)
+  async execute(query: ReadProductQuery): Promise<ReadProductModel> {
+    const productId = new ProductId(query.productId)
+    const product = await this.productRepository.findById(productId)
+
+    if (!product) throw new ProductNotFoundException()
+
+    return product
   }
 }

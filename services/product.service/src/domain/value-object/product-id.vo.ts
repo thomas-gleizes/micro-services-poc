@@ -1,3 +1,7 @@
 export class ProductId {
-  public readonly id: string
+  constructor(public readonly id: string) {}
+
+  toString() {
+    return this.id.toString()
+  }
 }

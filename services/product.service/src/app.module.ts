@@ -1,5 +1,5 @@
 import { Module, OnModuleInit } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import { ProductModule } from './shared/modules/product.module'
 import { MessagingModule } from './shared/messaging/messaging.module'
 import { HealthController } from './presentation/controllers/health.controller'
@@ -11,11 +11,15 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validationSchema: envSchema }),
-    TypeOrmModule.forRoot({
-      type: 'mongodb',
-      url: 'mongodb://mongodb:27017/products',
-      entities: ['src/infrastructure/**/*.schema.ts'],
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'mongodb',
+        url: config.get<string>('DATABASE_URL'),
+        entities: [`${__dirname}/**/*.schema.ts`],
+        synchronize: true,
+      }),
     }),
     KafkaModule,
     MessagingModule,

@@ -5,6 +5,7 @@ import { AppModule } from './app.module'
 import { HttpLoggingInterceptor } from './shared/http-logging-interceptor'
 import { DomainExceptionFilters } from './presentation/filters/domain-exception.filters'
 import { GlobalExceptionFilters } from './presentation/filters/global-exception.filters'
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -15,6 +16,19 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionFilters())
   app.useGlobalPipes(new ValidationPipe({ transform: true }))
   app.useGlobalInterceptors(new HttpLoggingInterceptor())
+
+  const document = new DocumentBuilder()
+    .setTitle('Product Service')
+    .setDescription('This service manage products and category')
+    .setVersion('1.0')
+    .build()
+
+  const documentFactory = () => SwaggerModule.createDocument(app, document)
+  SwaggerModule.setup('docs', app, documentFactory, {
+    raw: true,
+    jsonDocumentUrl: 'docs.json',
+    yamlDocumentUrl: 'docs.yaml',
+  })
 
   process.on('SIGTERM', () => {
     logger.debug('SIGTERM received, shutting down gracefully')

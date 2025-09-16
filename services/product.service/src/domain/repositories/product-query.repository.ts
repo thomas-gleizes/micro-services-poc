@@ -1,6 +1,7 @@
 import { ProductStatus } from '../value-object/product-status.enum'
+import { ProductId } from '../value-object/product-id.vo'
 
-export type ReadProduct = {
+export type ReadProductModel = {
   id: string
   name: string
   description: string
@@ -16,8 +17,8 @@ export type PaginationResult<T> = {
   data: T[]
   meta: {
     total: number
-    limit: number
-    page: number
+    size: number
+    offset: number
   }
 }
 
@@ -36,7 +37,10 @@ export type Pagination = {
 export const PRODUCT_QUERY_REPOSITORY = Symbol('PRODUCT_QUERY_REPOSITORY')
 
 export interface ProductQueryRepository {
-  findById(id: string): Promise<ReadProduct>
+  findById(id: ProductId): Promise<ReadProductModel | null>
 
-  findAll(filters: ProductFilters, pagination?: Pagination): Promise<PaginationResult<ReadProduct>>
+  findAll(
+    filters: ProductFilters,
+    pagination?: Pagination,
+  ): Promise<PaginationResult<ReadProductModel>>
 }

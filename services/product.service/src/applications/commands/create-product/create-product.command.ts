@@ -1,4 +1,4 @@
-import { CreateProductDto } from '../../../presentation/dtos/create-product.dto'
+import { CreateProductDto } from '../../../presentation/dtos/input/create-product.dto'
 import { ProductProps } from '../../../domain/entities/product.entity'
 import { Message } from '../../../shared/messaging/message.interface'
 import { ICommand } from '@nestjs/cqrs'

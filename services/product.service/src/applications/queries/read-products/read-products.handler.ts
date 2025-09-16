@@ -5,7 +5,7 @@ import {
   PaginationResult,
   PRODUCT_QUERY_REPOSITORY,
   ProductQueryRepository,
-  ReadProduct,
+  ReadProductModel,
 } from '../../../domain/repositories/product-query.repository'
 
 @QueryHandler(ReadProductsQuery)
@@ -15,7 +15,7 @@ export class ReadProductsHandler implements IQueryHandler<ReadProductsQuery> {
     private readonly productRepository: ProductQueryRepository,
   ) {}
 
-  execute(query: ReadProductsQuery): Promise<PaginationResult<ReadProduct>> {
+  execute(query: ReadProductsQuery): Promise<PaginationResult<ReadProductModel>> {
     return this.productRepository.findAll({}, { page: query.page, limit: query.limit })
   }
 }

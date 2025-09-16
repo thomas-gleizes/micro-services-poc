@@ -11,11 +11,13 @@ import { PRODUCT_COMMAND_REPOSITORY } from '../../domain/repositories/product-co
 import { ProductMongoCommandRepository } from '../../infrastructure/repositories/product-mongo-command.repository'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ProductSchema } from '../../infrastructure/schemas/product.schema'
+import { ProductMapper } from '../../applications/mappers/product.mapper'
 
 @Module({
   imports: [KafkaModule, ConfigModule, TypeOrmModule.forFeature([ProductSchema])],
   controllers: [ProductController],
   providers: [
+    ProductMapper,
     {
       provide: PRODUCT_QUERY_REPOSITORY,
       useClass: ProductMongoQueryRepository,
