@@ -2,17 +2,15 @@ import { IQueryHandler } from '@nestjs/cqrs'
 import { Injectable, Logger, OnModuleInit, Scope } from '@nestjs/common'
 import { KafkaProducer } from './kafka/kafka.producer'
 import { KafkaConsumer } from './kafka/kafka.consumer'
-import { ConfigService } from '@nestjs/config'
 import { DiscoveryService } from '@nestjs/core'
 import { QUERY_HANDLER_METADATA } from '@nestjs/cqrs/dist/decorators/constants'
 
 @Injectable({ scope: Scope.DEFAULT })
-export class MessagingQueryBus implements OnModuleInit {
-  private readonly logger = new Logger(MessagingQueryBus.name)
+export class MessagingQueryHandler implements OnModuleInit {
+  private readonly logger = new Logger(MessagingQueryHandler.name)
   private readonly handlers = new Map<String, IQueryHandler>()
 
   constructor(
-    private readonly config: ConfigService,
     private readonly producer: KafkaProducer,
     private readonly consumer: KafkaConsumer,
     private readonly discoveryService: DiscoveryService,
@@ -22,10 +20,10 @@ export class MessagingQueryBus implements OnModuleInit {
     await Promise.all([this.consumeQueries(), this.producer.connect()])
     await this.consumer.run()
 
-    this.retrieveQueryClass()
+    this.retrieveQueryHandlers()
   }
 
-  retrieveQueryClass() {
+  retrieveQueryHandlers() {
     const providers = this.discoveryService.getProviders()
 
     for (const wrapper of providers) {

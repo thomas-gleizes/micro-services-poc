@@ -1,8 +1,8 @@
-import { Column, Entity, ObjectIdColumn, PrimaryColumn } from 'typeorm'
+import { Column, Entity, ObjectIdColumn } from 'typeorm'
 import { ObjectId } from 'mongodb'
 
-@Entity()
-export class ProductSchema {
+@Entity({ name: 'readable_products' })
+export class ReadableProductSchema {
   @ObjectIdColumn()
   _id: ObjectId
 
@@ -21,18 +21,12 @@ export class ProductSchema {
   @Column({ type: 'string' })
   currency: string
 
-  @Column({ type: 'string' })
-  status: string
+  @Column({ type: 'boolean' })
+  isAvailable: boolean
 
   @Column({ type: 'datetime' })
   createdAt: Date
 
   @Column({ type: 'datetime' })
   updatedAt: Date
-
-  @Column({ type: 'string' })
-  state: string
-
-  @Column({ type: 'string' })
-  version: number
 }

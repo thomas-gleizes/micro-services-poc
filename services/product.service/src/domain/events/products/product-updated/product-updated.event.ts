@@ -2,6 +2,7 @@ import { IEvent } from '@nestjs/cqrs'
 
 export class ProductUpdatedEvent implements IEvent {
   constructor(
+    public readonly productId: string,
     public readonly name: string,
     public readonly description: string,
     public readonly price: number,

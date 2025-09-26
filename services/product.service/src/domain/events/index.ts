@@ -25,4 +25,4 @@ export const productEvents: Type<IEvent>[] = [
   ProductEnabledEvent,
   ProductDisabledEvent,
   ProductArchivedEvent,
-]
+] as const
