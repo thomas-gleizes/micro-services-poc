@@ -1,11 +1,16 @@
 import { IsNotEmpty, IsNumber, IsPositive, IsString, MaxLength, MinLength } from 'class-validator'
 import { Transform } from 'class-transformer'
 import { ApiProperty } from '@nestjs/swagger'
+import { CreateProductCommand } from '../../../applications/commands/create-product/create-product.command'
 
 export class CreateProductDto {
   @IsString()
   @ApiProperty({ type: 'string' })
   name: string
+
+  @ApiProperty({ type: 'string' })
+  @IsString()
+  description: string
 
   @ApiProperty({ type: 'number' })
   @IsNumber()
@@ -14,13 +19,9 @@ export class CreateProductDto {
 
   @ApiProperty({ type: 'string' })
   @IsString()
-  description: string
-
-  @ApiProperty({ type: 'string' })
-  @IsString()
   currency: string
 
-  @ApiProperty({ type: 'string' })
-  @IsString()
-  image: string
+  toCommand(): CreateProductCommand {
+    return new CreateProductCommand(this.name, this.description, this.price, this.currency)
+  }
 }

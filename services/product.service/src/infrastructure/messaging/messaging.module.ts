@@ -1,5 +1,5 @@
 import { Module, OnModuleInit, DynamicModule, Global } from '@nestjs/common'
-import { KafkaModule } from '../kafka/kafka.module'
+import { KafkaModule } from './kafka/kafka.module'
 import { QueryBus, CqrsModule, EventBus, EventPublisher, CommandBus } from '@nestjs/cqrs'
 import { MessagingQueryBus } from './messaging-query.bus'
 import { ConfigModule } from '@nestjs/config'
@@ -16,14 +16,6 @@ import { MessagingCommandBus } from './messaging-command.bus'
     MessagingEventPublisher,
     MessagingEventSubscriber,
     {
-      provide: QueryBus,
-      useClass: MessagingQueryBus,
-    },
-    {
-      provide: CommandBus,
-      useClass: MessagingCommandBus,
-    },
-    {
       provide: 'EVENTS',
       useValue: [...productEvents],
     },
@@ -33,7 +25,7 @@ import { MessagingCommandBus } from './messaging-command.bus'
     },
     EventPublisher,
   ],
-  exports: [QueryBus, CommandBus, EventPublisher, MessagingEventPublisher],
+  exports: [EventPublisher, MessagingEventPublisher],
 })
 export class MessagingModule implements OnModuleInit {
   constructor(

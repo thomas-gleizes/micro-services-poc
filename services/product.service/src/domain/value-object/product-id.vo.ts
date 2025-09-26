@@ -1,5 +1,5 @@
 export class ProductId {
-  constructor(public readonly id: string) {}
+  constructor(private readonly id: string) {}
 
   toString() {
     return this.id.toString()

@@ -1,37 +1,38 @@
-import { Column, Entity } from 'typeorm'
+import { Column, Entity, ObjectIdColumn, PrimaryColumn } from 'typeorm'
+import { ObjectId } from 'mongodb'
 
 @Entity()
 export class ProductSchema {
-  @Column()
+  @ObjectIdColumn()
+  _id: ObjectId
+
+  @Column({ type: 'string' })
   id: string
 
-  @Column()
+  @Column({ type: 'string' })
   name: string
 
-  @Column()
+  @Column({ type: 'string' })
   description: string
 
-  @Column()
+  @Column({ type: 'float' })
   price: number
 
-  @Column()
+  @Column({ type: 'string' })
   currency: string
 
-  @Column()
-  image: string
-
-  @Column()
+  @Column({ type: 'string' })
   status: string
 
-  @Column()
+  @Column({ type: 'datetime' })
   createdAt: Date
 
-  @Column()
+  @Column({ type: 'datetime' })
   updatedAt: Date
 
-  @Column()
+  @Column({ type: 'string' })
   state: string
 
-  @Column()
-  version: string
+  @Column({ type: 'string' })
+  version: number
 }

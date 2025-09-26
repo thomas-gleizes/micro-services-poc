@@ -7,7 +7,6 @@ export type ReadProductModel = {
   description: string
   price: number
   currency: string
-  image: string
   status: ProductStatus
   createdAt: Date
   updatedAt: Date

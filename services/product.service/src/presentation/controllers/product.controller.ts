@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -11,21 +10,21 @@ import {
   Query,
 } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
-import { CreateProductCommand } from '../../applications/commands/create-product/create-product.command'
 import { CreateProductDto } from '../dtos/input/create-product.dto'
 import { ReadProductQuery } from '../../applications/queries/read-product/read-product.query'
 import { ReadProductsQuery } from '../../applications/queries/read-products/read-products.query'
-import { UpdateProductCommand } from '../../applications/commands/update-product/update-product.command'
-import { DeleteProductCommand } from '../../applications/commands/delete-product/delete-product.commend'
 import { ProductResponseDto } from '../dtos/output/product-response.dto'
 import { ProductMapper } from '../../applications/mappers/product.mapper'
-import { ProductProps } from '../../domain/entities/product.entity'
-import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse } from '@nestjs/swagger'
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import { ProductsResponseDto } from '../dtos/output/products-response.dto'
 import {
   PaginationResult,
   ReadProductModel,
 } from '../../domain/repositories/product-query.repository'
+import { UpdateProductDto } from '../dtos/input/update-product.dto'
+import { UpdateProductCommand } from '../../applications/commands/update-product/update-product.command'
+import { ProductAggregate } from '../../domain/aggregates/product.aggregate'
+import { CreateProductCommand } from '../../applications/commands/create-product/create-product.command'
 
 @Controller()
 export class ProductController {
@@ -39,11 +38,11 @@ export class ProductController {
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ description: 'create a product', type: ProductResponseDto })
   async create(@Body() body: CreateProductDto) {
-    const product = await this.commandBus.execute<CreateProductCommand, ProductProps>(
-      new CreateProductCommand(body),
+    const product = await this.commandBus.execute<CreateProductCommand, ProductAggregate>(
+      body.toCommand(),
     )
 
-    return this.productMapper.fromEntity(product)
+    return this.productMapper.fromAggregate(product)
   }
 
   @Get('products')
@@ -53,9 +52,10 @@ export class ProductController {
     @Query('page') page: number,
     @Query('limit') limit: number,
   ): Promise<ProductsResponseDto> {
-    const results: PaginationResult<ReadProductModel> = await this.queryBus.execute(
-      new ReadProductsQuery(page, limit),
-    )
+    const results = await this.queryBus.execute<
+      ReadProductsQuery,
+      PaginationResult<ReadProductModel>
+    >(new ReadProductsQuery(page, limit))
 
     return {
       meta: results.meta,
@@ -70,29 +70,24 @@ export class ProductController {
     type: ProductResponseDto,
   })
   async show(@Param('id') id: string) {
-    const product: ReadProductModel = await this.queryBus.execute(new ReadProductQuery(id))
+    const product = await this.queryBus.execute<ReadProductQuery, ReadProductModel>(
+      new ReadProductQuery(id),
+    )
 
     return this.productMapper.fromReadModel(product)
   }
 
   @Patch('products/:id')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Update a product', type: ProductResponseDto })
-  async update(
-    @Param('id') id: string,
-    @Body() body: CreateProductDto,
-  ): Promise<ProductResponseDto> {
-    const product: ProductProps = await this.commandBus.execute(new UpdateProductCommand(id, body))
+  @ApiOkResponse({
+    description: 'update a product',
+    type: ProductResponseDto,
+  })
+  async update(@Param('id') id: string, @Body() body: UpdateProductDto) {
+    const aggregate = await this.commandBus.execute<UpdateProductCommand, ProductAggregate>(
+      body.toCommand(id),
+    )
 
-    return this.productMapper.fromEntity(product)
-  }
-
-  @Delete('products/:id')
-  @HttpCode(HttpStatus.OK)
-  @ApiNoContentResponse({ description: 'Archive a product' })
-  async delete(@Param('id') id: string) {
-    const product: ProductProps = await this.commandBus.execute(new DeleteProductCommand(id))
-
-    return this.productMapper.fromEntity(product)
+    return this.productMapper.fromAggregate(aggregate)
   }
 }

@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core'
 import { Logger, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { AppModule } from './app.module'
-import { HttpLoggingInterceptor } from './shared/http-logging-interceptor'
+import { HttpLoggingInterceptor } from './presentation/interceptor/http-logging-interceptor'
 import { DomainExceptionFilters } from './presentation/filters/domain-exception.filters'
 import { GlobalExceptionFilters } from './presentation/filters/global-exception.filters'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
@@ -28,11 +28,6 @@ async function bootstrap() {
     raw: true,
     jsonDocumentUrl: 'docs.json',
     yamlDocumentUrl: 'docs.yaml',
-  })
-
-  process.on('SIGTERM', () => {
-    logger.debug('SIGTERM received, shutting down gracefully')
-    app.close()
   })
 
   await app.listen(config.get<number>('PORT', 3000))

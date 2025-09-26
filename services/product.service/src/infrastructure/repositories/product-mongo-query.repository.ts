@@ -26,7 +26,6 @@ export class ProductMongoQueryRepository implements ProductQueryRepository {
       description: record.description,
       price: record.price,
       currency: record.currency,
-      image: record.image,
       status: record.status as ProductStatus,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,

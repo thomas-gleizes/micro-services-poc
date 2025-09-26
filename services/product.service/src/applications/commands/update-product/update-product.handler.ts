@@ -1,37 +1,35 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { UpdateProductCommand } from './update-product.command'
-import { ProductProps } from '../../../domain/entities/product.entity'
+import { ProductAggregate } from '../../../domain/aggregates/product.aggregate'
 import {
   PRODUCT_COMMAND_REPOSITORY,
-  ProductCommandRepository,
-} from '../../../domain/repositories/product-command.repository'
+  IProductCommandRepository,
+} from '../../../domain/repositories/product-command-repository.interface'
 import { Inject } from '@nestjs/common'
 import { ProductId } from '../../../domain/value-object/product-id.vo'
 import { ProductNotFoundException } from '../../../domain/exceptions/product-not-found.exceptions'
 
 @CommandHandler(UpdateProductCommand)
-export class UpdateProductHandler implements ICommandHandler<UpdateProductCommand> {
+export class UpdateProductHandler
+  implements ICommandHandler<UpdateProductCommand, ProductAggregate>
+{
   constructor(
     @Inject(PRODUCT_COMMAND_REPOSITORY)
-    private readonly productRepository: ProductCommandRepository,
+    private readonly productCommandRepository: IProductCommandRepository,
   ) {}
 
-  async execute(command: UpdateProductCommand): Promise<ProductProps> {
+  async execute(command: UpdateProductCommand): Promise<ProductAggregate> {
     const productId = new ProductId(command.productId)
 
-    const aggregate = await this.productRepository.findById(productId)
+    const aggregate = await this.productCommandRepository.findById(productId)
 
     if (!aggregate) throw new ProductNotFoundException()
 
-    aggregate.product.price = command.data.price
-    aggregate.product.name = command.data.name
-    aggregate.product.description = command.data.description
-    aggregate.product.image = command.data.image
-    aggregate.product.currency = command.data.currency
+    aggregate.update(command.name, command.description, command.price, command.currency)
 
-    aggregate.update()
+    await this.productCommandRepository.save(aggregate)
     aggregate.commit()
 
-    return aggregate.product.toPrimitives()
+    return aggregate
   }
 }

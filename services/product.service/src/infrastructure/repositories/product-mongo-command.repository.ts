@@ -1,37 +1,38 @@
 import { ProductAggregate } from 'src/domain/aggregates/product.aggregate'
-import { ProductProps } from 'src/domain/entities/product.entity'
-import { ProductCommandRepository } from '../../domain/repositories/product-command.repository'
-import { Injectable } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-import { ProductSchema } from '../schemas/product.schema'
-import { Repository } from 'typeorm'
+import { IProductCommandRepository } from '../../domain/repositories/product-command-repository.interface'
+import { Inject, Injectable } from '@nestjs/common'
 import { ProductId } from '../../domain/value-object/product-id.vo'
+import { EVENT_STORE, IEventStore } from '../events-store/event-store.interface'
 
 @Injectable()
-export class ProductMongoCommandRepository implements ProductCommandRepository {
+export class ProductMongoCommandRepository implements IProductCommandRepository {
   constructor(
-    @InjectRepository(ProductSchema)
-    private readonly productRepo: Repository<ProductSchema>,
+    @Inject(EVENT_STORE)
+    private readonly eventStore: IEventStore,
   ) {}
 
-  findById(id: ProductId): Promise<ProductAggregate | null> {
-    console.log(id)
-    return Promise.resolve(null)
+  async findById(id: ProductId): Promise<ProductAggregate | null> {
+    const events = await this.eventStore.findEventByAggregate(id.toString())
+
+    if (events.length <= 0) return null
+
+    const aggregate = new ProductAggregate()
+
+    for (const event of events) {
+      aggregate.applyEvent(event.type, event.payload)
+    }
+
+    return aggregate
   }
 
-  save(product: ProductProps): Promise<ProductAggregate | null> {
-    console.log(product)
-    return Promise.resolve(null)
-  }
+  async save(aggregate: ProductAggregate): Promise<void> {
+    const events = aggregate.getUncommittedEvents()
 
-  update(id: ProductId, product: ProductProps): Promise<ProductAggregate | null> {
-    console.log(id, product)
-
-    return Promise.resolve(null)
-  }
-
-  delete(id: ProductId): Promise<void> {
-    console.log(id)
-    return Promise.resolve()
+    await this.eventStore.save(
+      aggregate.id.toString(),
+      ProductAggregate.name,
+      events,
+      Math.max(0, aggregate.version - events.length),
+    )
   }
 }
