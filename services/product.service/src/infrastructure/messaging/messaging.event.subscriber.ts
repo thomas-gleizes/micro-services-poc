@@ -1,9 +1,7 @@
 import { IEvent, IMessageSource } from '@nestjs/cqrs'
 import { Subject } from 'rxjs'
 import { Inject, Injectable } from '@nestjs/common'
-import { KafkaConsumer } from '../kafka/kafka.consumer'
-import { Serializable } from './message.interface'
-import { DomainEventClass } from '../../domain/events/domain-event'
+import { KafkaConsumer } from './kafka/kafka.consumer'
 
 @Injectable()
 export class MessagingEventSubscriber implements IMessageSource {
@@ -11,7 +9,7 @@ export class MessagingEventSubscriber implements IMessageSource {
 
   constructor(
     private readonly consumer: KafkaConsumer,
-    @Inject('EVENTS') private readonly events: DomainEventClass[],
+    @Inject('EVENTS') private readonly events: IEvent[],
   ) {}
 
   async connect(): Promise<void> {
@@ -19,8 +17,9 @@ export class MessagingEventSubscriber implements IMessageSource {
       { topic: /Event$/, fromBeginning: true },
       async ({ topic, message }) => {
         for (const event of this.events) {
-          if (event.name === topic) {
-            return this.bridge.next(event.deserialize(message as Serializable))
+          if (event.constructor.name === topic) {
+            // @ts-ignore
+            return this.bridge.next(new event(...message))
           }
         }
       },

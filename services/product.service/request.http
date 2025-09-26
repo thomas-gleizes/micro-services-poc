@@ -14,15 +14,14 @@ Content-Type: application/json
   "name": "{{$random.commerce.productName}}",
   "price": 22.20,
   "description": "{{$random.lorem.sentence}}",
-  "currency": "USD",
-  "image": "https://placehold.co/600x400"
+  "currency": "USD"
 }
 
 ### DELETE a product by ID
 DELETE {{baseURL}}/products/{{id}}
 
 ### UPDATE a product
-PATCH {{baseURL}}/products/{{id}}
+PATCH {{baseURL}}/products/220cfcdd-f486-4ca0-bb4b-a70c616674e4
 Content-Type: application/json
 
 {

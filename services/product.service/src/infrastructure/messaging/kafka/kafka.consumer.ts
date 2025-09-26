@@ -1,11 +1,10 @@
 import { Inject, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
 import { Consumer, Kafka } from 'kafkajs'
-import { Serializable } from '../messaging/message.interface'
 import { ConfigService } from '@nestjs/config'
 
 type MessageHandler = (message: {
   topic: string
-  message: Serializable
+  message: any
   metadata: { [key: string]: string }
 }) => void | Promise<void>
 
@@ -57,11 +56,11 @@ export class KafkaConsumer implements OnModuleInit, OnModuleDestroy {
             const metadata = Object.fromEntries(
               Object.entries(message.headers || {}).map(([key, value]) => [
                 key,
-                Buffer.isBuffer(value) ? value.toString() : (value ?? ''),
+                Buffer.isBuffer(value) ? value.toString() : value ?? '',
               ]),
             ) as { [key: string]: string }
 
-            const deserializeMessage = JSON.parse(message.value.toString()) as Serializable
+            const deserializeMessage = JSON.parse(message.value.toString()) as any
 
             for (const [key, handler] of this.handlers.entries()) {
               if (key === topic) await handler({ topic, message: deserializeMessage, metadata })

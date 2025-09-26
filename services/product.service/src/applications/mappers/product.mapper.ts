@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ReadProductModel } from '../../domain/repositories/product-query.repository'
 import { ProductResponseDto } from '../../presentation/dtos/output/product-response.dto'
-import { ProductProps } from '../../domain/entities/product.entity'
+import { ProductAggregate } from '../../domain/aggregates/product.aggregate'
 
 @Injectable()
 export class ProductMapper {
@@ -14,11 +14,11 @@ export class ProductMapper {
     return dto
   }
 
-  fromEntity(entity: ProductProps): ProductResponseDto {
+  fromAggregate(aggregate: ProductAggregate): ProductResponseDto {
     const dto = new ProductResponseDto()
 
-    dto.id = entity.id
-    dto.name = entity.name
+    dto.id = aggregate.id.toString()
+    dto.name = aggregate.name
 
     return dto
   }
