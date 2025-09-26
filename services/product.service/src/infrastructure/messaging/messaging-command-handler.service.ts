@@ -2,16 +2,14 @@ import { IQueryHandler } from '@nestjs/cqrs'
 import { Injectable, OnModuleInit, Scope } from '@nestjs/common'
 import { KafkaProducer } from './kafka/kafka.producer'
 import { KafkaConsumer } from './kafka/kafka.consumer'
-import { ConfigService } from '@nestjs/config'
 import { DiscoveryService } from '@nestjs/core'
 import { COMMAND_HANDLER_METADATA } from '@nestjs/cqrs/dist/utils/constants'
 
 @Injectable({ scope: Scope.DEFAULT })
-export class MessagingCommandBus implements OnModuleInit {
+export class MessagingCommandHandler implements OnModuleInit {
   private readonly handlers = new Map<String, IQueryHandler>()
 
   constructor(
-    private readonly config: ConfigService,
     private readonly producer: KafkaProducer,
     private readonly consumer: KafkaConsumer,
     private readonly discoveryService: DiscoveryService,

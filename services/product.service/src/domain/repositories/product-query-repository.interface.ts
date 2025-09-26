@@ -1,5 +1,6 @@
 import { ProductStatus } from '../value-object/product-status.enum'
 import { ProductId } from '../value-object/product-id.vo'
+import { productEvents } from '../events'
 
 export type ReadProductModel = {
   id: string
@@ -7,7 +8,7 @@ export type ReadProductModel = {
   description: string
   price: number
   currency: string
-  status: ProductStatus
+  isAvailable: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -35,11 +36,13 @@ export type Pagination = {
 
 export const PRODUCT_QUERY_REPOSITORY = Symbol('PRODUCT_QUERY_REPOSITORY')
 
-export interface ProductQueryRepository {
+export interface IProductQueryRepository {
   findById(id: ProductId): Promise<ReadProductModel | null>
 
   findAll(
     filters: ProductFilters,
     pagination?: Pagination,
   ): Promise<PaginationResult<ReadProductModel>>
+
+  persistFromEvent(event: InstanceType<(typeof productEvents)[number]>): Promise<void>
 }
