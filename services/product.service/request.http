@@ -1,5 +1,3 @@
-@id = 12cce1ff-e1b1-43c8-9353-5a85c6a5539c
-
 ### GET a product by ID
 GET {{baseURL}}/products/{{id}}
 
@@ -17,11 +15,27 @@ Content-Type: application/json
   "currency": "USD"
 }
 
-### DELETE a product by ID
+> {%
+  client.global.set('id', response.body.id)
+%}}
+
+### archive a product by ID
 DELETE {{baseURL}}/products/{{id}}
 
+### enable a product by ID
+PATCH {{baseURL}}/products/{{id}}/enable
+Content-Type: application/json
+
+{}
+
+### disable a product by ID
+PATCH {{baseURL}}/products/{{id}}/disable
+Content-Type: application/json
+
+{}
+
 ### UPDATE a product
-PATCH {{baseURL}}/products/220cfcdd-f486-4ca0-bb4b-a70c616674e4
+PATCH {{baseURL}}/products/{{id}}
 Content-Type: application/json
 
 {

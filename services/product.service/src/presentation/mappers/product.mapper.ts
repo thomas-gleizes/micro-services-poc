@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { ProductResponseDto } from '../../presentation/dtos/output/product-response.dto'
+import { ProductResponseDto } from '../dtos/output/product-response.dto'
 import { ProductAggregate } from '../../domain/aggregates/product.aggregate'
 import { ProductStatus } from '../../domain/value-object/product-status.enum'
 import { ReadProductModel } from '../../domain/repositories/product-query-repository.interface'

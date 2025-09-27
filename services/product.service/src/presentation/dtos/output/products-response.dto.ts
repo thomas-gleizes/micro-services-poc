@@ -6,6 +6,6 @@ export class ProductsResponseDto implements PaginationResponseDto<ProductRespons
   @ApiProperty({ type: PaginationMetaDto })
   meta: PaginationMetaDto
 
-  @ApiProperty({ type: 'array' })
+  @ApiProperty({ type: [ProductResponseDto] })
   records: ProductResponseDto[]
 }

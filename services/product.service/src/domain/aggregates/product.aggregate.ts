@@ -41,6 +41,11 @@ export class ProductAggregate extends AggregateRoot {
     aggregate._description = description
     aggregate._price = price
     aggregate._currency = currency
+    aggregate._status = ProductStatus.UNAVAILABLE
+    aggregate._createdAt = new Date()
+    aggregate._updatedAt = new Date()
+
+    aggregate._state = ProductState.created()
 
     aggregate.apply(
       new ProductCreatedEvent(
@@ -62,6 +67,7 @@ export class ProductAggregate extends AggregateRoot {
     if (!this.state.canEnable()) throw new DomainException("Can't enable this aggregate")
 
     this._status = ProductStatus.AVAILABLE
+    this._state = ProductState.enabled()
 
     this.apply(new ProductEnabledEvent(this._id.toString(), this._status))
   }
@@ -70,6 +76,7 @@ export class ProductAggregate extends AggregateRoot {
     if (!this.state.canDisable()) throw new DomainException("Can't disabled this aggregate")
 
     this._status = ProductStatus.UNAVAILABLE
+    this._state = ProductState.disabled()
 
     this.apply(new ProductDisabledEvent(this._id.toString(), this._status))
   }
@@ -77,11 +84,13 @@ export class ProductAggregate extends AggregateRoot {
   update(name: string, description: string, price: number, currency: string) {
     if (!this.state.canUpdate()) throw new DomainException("Can't update this aggregate")
 
-    this._updatedAt = new Date()
     this._name = name
     this._description = description
     this._price = price
     this._currency = currency
+    this._updatedAt = new Date()
+
+    this._state = ProductState.updated()
 
     this.apply(
       new ProductUpdatedEvent(
@@ -97,6 +106,8 @@ export class ProductAggregate extends AggregateRoot {
 
   archive() {
     if (!this.state.canArchive()) throw new DomainException("Can't archived this aggregate")
+
+    this._state = ProductState.archived()
 
     this.apply(new ProductArchivedEvent(this._id.toString()))
   }

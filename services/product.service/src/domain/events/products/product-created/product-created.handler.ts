@@ -14,6 +14,8 @@ export class ProductCreatedHandler implements IEventHandler<ProductCreatedEvent>
   ) {}
 
   async handle(event: ProductCreatedEvent) {
+    console.log('handle', ProductCreatedEvent.name, event)
+
     await this.productQueryRepository.persistFromEvent(event)
   }
 }

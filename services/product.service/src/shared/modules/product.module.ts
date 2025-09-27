@@ -8,12 +8,14 @@ import { productEventHandlers } from '../../domain/events'
 import { PRODUCT_COMMAND_REPOSITORY } from '../../domain/repositories/product-command-repository.interface'
 import { ProductCommandRepository } from '../../infrastructure/repositories/product-command.repository'
 import { ReadableProductSchema } from '../../infrastructure/schemas/readableProductSchema'
-import { ProductMapper } from '../../applications/mappers/product.mapper'
+import { ProductMapper } from '../../presentation/mappers/product.mapper'
 import { EVENT_STORE } from '../../infrastructure/events-store/event-store.interface'
 import { EventStore } from '../../infrastructure/events-store/events-store'
 import { EventSchema } from '../../infrastructure/schemas/event.schema'
 import { PRODUCT_QUERY_REPOSITORY } from '../../domain/repositories/product-query-repository.interface'
 import { ProductQueryRepository } from '../../infrastructure/repositories/product-query.repository'
+import { IDENTIFIANT_GENERATOR } from '../../domain/ports/identifiant-generator.port'
+import { IdentifiantGeneratorAdapter } from '../../infrastructure/adapters/identifiant-generator-adapter.service'
 
 @Module({
   imports: [CqrsModule, TypeOrmModule.forFeature([ReadableProductSchema, EventSchema])],
@@ -31,6 +33,10 @@ import { ProductQueryRepository } from '../../infrastructure/repositories/produc
     {
       provide: EVENT_STORE,
       useClass: EventStore,
+    },
+    {
+      provide: IDENTIFIANT_GENERATOR,
+      useClass: IdentifiantGeneratorAdapter,
     },
     ...commandHandlers,
     ...queryHandlers,
