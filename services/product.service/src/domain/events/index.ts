@@ -17,7 +17,7 @@ export const productEventHandlers: Type<IEventHandler>[] = [
   ProductEnabledHandler,
   ProductDisabledHandler,
   ProductDeletedHandler,
-]
+] as const
 
 export const productEvents: Type<IEvent>[] = [
   ProductCreatedEvent,

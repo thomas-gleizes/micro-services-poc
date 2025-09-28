@@ -51,6 +51,8 @@ export class EventStore implements IEventStore {
       }
 
       for (const { event, index } of events.map((event, index) => ({ event, index }))) {
+        console.log('Event', event)
+
         await runner.manager.save(EventSchema, {
           id: randomUUID(),
           type: event.constructor.name,
@@ -69,5 +71,17 @@ export class EventStore implements IEventStore {
     } finally {
       await runner.release()
     }
+  }
+
+  async saveEvent(event: EventData): Promise<EventSchema> {
+    return this.repository.save({
+      id: randomUUID(),
+      type: event.type,
+      aggregateType: event.aggregateType,
+      aggregateId: event.aggregateId,
+      metadata: {},
+      payload: event.payload,
+      version: event.version,
+    })
   }
 }

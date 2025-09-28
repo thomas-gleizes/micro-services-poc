@@ -1,6 +1,6 @@
 import { IEvent } from '@nestjs/cqrs'
 
-export interface EventData {
+export interface EventData extends IEvent {
   // id of event
   id: string
 

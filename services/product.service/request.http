@@ -17,7 +17,7 @@ Content-Type: application/json
 
 > {%
   client.global.set('id', response.body.id)
-%}}
+%}
 
 ### archive a product by ID
 DELETE {{baseURL}}/products/{{id}}

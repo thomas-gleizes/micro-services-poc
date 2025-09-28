@@ -2,7 +2,6 @@ import { CommandHandler, EventPublisher, ICommandHandler } from '@nestjs/cqrs'
 import { CreateProductCommand } from './create-product.command'
 import { ProductAggregate } from '../../../domain/aggregates/product.aggregate'
 import { ProductId } from '../../../domain/value-object/product-id.vo'
-import { randomUUID } from 'node:crypto'
 import {
   PRODUCT_COMMAND_REPOSITORY,
   IProductCommandRepository,
@@ -36,7 +35,7 @@ export class CreateProductHandler
       ),
     )
 
-    await this.productCommandRepository.save(aggregate)
+    // await this.productCommandRepository.save(aggregate)
     aggregate.commit()
 
     return aggregate

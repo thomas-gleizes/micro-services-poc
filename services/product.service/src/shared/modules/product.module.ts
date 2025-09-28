@@ -16,9 +16,14 @@ import { PRODUCT_QUERY_REPOSITORY } from '../../domain/repositories/product-quer
 import { ProductQueryRepository } from '../../infrastructure/repositories/product-query.repository'
 import { IDENTIFIANT_GENERATOR } from '../../domain/ports/identifiant-generator.port'
 import { IdentifiantGeneratorAdapter } from '../../infrastructure/adapters/identifiant-generator-adapter.service'
+import { MessagingModule } from '../../infrastructure/messaging/messaging.module'
 
 @Module({
-  imports: [CqrsModule, TypeOrmModule.forFeature([ReadableProductSchema, EventSchema])],
+  imports: [
+    CqrsModule,
+    MessagingModule,
+    TypeOrmModule.forFeature([ReadableProductSchema, EventSchema]),
+  ],
   controllers: [ProductController],
   providers: [
     ProductMapper,

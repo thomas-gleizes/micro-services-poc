@@ -1,3 +1,4 @@
+import { IEvent } from '@nestjs/cqrs'
 import { ProductCreatedEvent } from '../events/products/product-created/product-created.event'
 import { ProductState } from '../value-object/product-state.vo'
 import { ProductStatus } from '../value-object/product-status.enum'
@@ -7,13 +8,9 @@ import { DomainException } from '../exceptions/domain.exception'
 import { ProductUpdatedEvent } from '../events/products/product-updated/product-updated.event'
 import { ProductEnabledEvent } from '../events/products/product-enabled/product-enabled.event'
 import { ProductDisabledEvent } from '../events/products/product-disabled/product-disabled.event'
-import { AggregateRoot } from '../../infrastructure/messaging/aggregate-root.interface'
-import { IEvent } from '@nestjs/cqrs'
-import { Logger } from '@nestjs/common'
+import { AggregateRoot } from '../../shared/aggregate-root.interface'
 
 export class ProductAggregate extends AggregateRoot {
-  private readonly logger = new Logger(ProductAggregate.name)
-
   public eventHandlers = {
     [ProductCreatedEvent.name]: this.onCreated.bind(this),
     [ProductEnabledEvent.name]: this.onEnabled.bind(this),
@@ -116,7 +113,7 @@ export class ProductAggregate extends AggregateRoot {
     const handler = this.eventHandlers[type]
 
     if (!handler) {
-      throw new DomainException(`handler not found: "${event.constructor.name}"`)
+      throw new DomainException(`Handler not found: "${event.constructor.name}"`)
     }
 
     handler(event)
@@ -195,5 +192,13 @@ export class ProductAggregate extends AggregateRoot {
 
   get state() {
     return this._state
+  }
+
+  protected getAggregateId(): string {
+    return this._id.toString()
+  }
+
+  protected getAggregateType(): string {
+    return 'product'
   }
 }

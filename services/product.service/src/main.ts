@@ -3,8 +3,8 @@ import { Logger, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { AppModule } from './app.module'
 import { HttpLoggingInterceptor } from './presentation/interceptor/http-logging-interceptor'
-import { DomainExceptionFilters } from './presentation/filters/domain-exception.filters'
-import { GlobalExceptionFilters } from './presentation/filters/global-exception.filters'
+import { DomainExceptionFilters } from './presentation/exception-filters/domain-exception.filters'
+import { GlobalExceptionFilters } from './presentation/exception-filters/global-exception.filters'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
 async function bootstrap() {

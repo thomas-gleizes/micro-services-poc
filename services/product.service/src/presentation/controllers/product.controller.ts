@@ -21,7 +21,6 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiQuery,
 } from '@nestjs/swagger'
 import { ProductsResponseDto } from '../dtos/output/products-response.dto'
 import {
@@ -62,8 +61,6 @@ export class ProductController {
   @ApiOperation({ summary: 'Get list of products with pagination' })
   @ApiOkResponse({ description: 'List of products', type: ProductsResponseDto })
   async index(@Query() query: PaginationDto): Promise<ProductsResponseDto> {
-    console.log('Query', query)
-
     const results = await this.queryBus.execute<
       ReadProductsQuery,
       PaginationResult<ReadProductModel>

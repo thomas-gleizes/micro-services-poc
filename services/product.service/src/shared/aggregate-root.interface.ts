@@ -12,15 +12,25 @@ export abstract class AggregateRoot extends NestAggregateRoot {
     this._version += 1
   }
 
+  protected abstract getAggregateId(): string
+
+  protected abstract getAggregateType(): string
+
   public apply(event: IEvent) {
+    this.increment()
     this._events.push(event)
+
+    super.apply({
+      aggregateId: this.getAggregateId(),
+      aggregateType: this.getAggregateType(),
+      version: this._version,
+      payload: event,
+      timestamp: Date.now(),
+    })
   }
 
-  public markEventsAsCommitted() {
+  public commit() {
+    super.commit()
     this._events = []
-  }
-
-  public getUncommittedEvents(): IEvent[] {
-    return this._events
   }
 }

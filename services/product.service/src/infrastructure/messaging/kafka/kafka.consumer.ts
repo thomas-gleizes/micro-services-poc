@@ -40,7 +40,6 @@ export class KafkaConsumer implements OnModuleInit, OnModuleDestroy {
     },
     handler: MessageHandler,
   ) {
-    await this.consumer.stop()
     this.handlers.set(options.topic, handler)
     await this.consumer.subscribe({ topic: options.topic, fromBeginning: options.fromBeginning })
   }

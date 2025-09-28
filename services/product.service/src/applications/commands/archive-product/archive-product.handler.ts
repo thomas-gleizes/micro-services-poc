@@ -26,7 +26,7 @@ export class ArchiveProductHandler
 
     aggregate.archive()
 
-    await this.productCommandRepository.save(aggregate)
+    // await this.productCommandRepository.save(aggregate)
     aggregate.commit()
 
     return aggregate

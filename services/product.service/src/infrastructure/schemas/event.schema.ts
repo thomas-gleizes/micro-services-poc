@@ -1,7 +1,7 @@
 import { Column, Entity, ObjectIdColumn } from 'typeorm'
 import { ObjectId } from 'mongodb'
 
-@Entity()
+@Entity({ name: 'events' })
 export class EventSchema {
   @ObjectIdColumn()
   _id: ObjectId

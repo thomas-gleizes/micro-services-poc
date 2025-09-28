@@ -18,6 +18,8 @@ export class ProductCommandRepository implements IProductCommandRepository {
 
     if (events.length <= 0) return null
 
+    console.log('Events', events)
+
     const aggregate = new ProductAggregate()
 
     for (const event of events) {

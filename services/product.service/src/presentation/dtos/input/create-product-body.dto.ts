@@ -18,7 +18,7 @@ export class CreateProductBodyDto {
 
   @ApiProperty({ type: 'string' })
   @IsNumber()
-  @Transform(({ value }) => parseInt(value, 10), { toClassOnly: true })
+  @Transform(({ value }) => parseFloat(value), { toClassOnly: true })
   @IsPositive()
   price: number
 
