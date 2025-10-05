@@ -1,28 +1,55 @@
-import { IEvent, IMessageSource } from '@nestjs/cqrs'
-import { Subject } from 'rxjs'
-import { Inject, Injectable, Logger, Type } from '@nestjs/common'
+import { IEvent } from '@nestjs/cqrs'
+import { Injectable, OnApplicationBootstrap, Type } from '@nestjs/common'
 import { KafkaConsumer } from '../kafka/kafka.consumer'
-import { EventData } from '../../events-store/event-store.interface'
+import { IProjectionHandler, PROJECTION_HANDLER_METADATA } from './projection.decorator'
+import { DomainEvent } from '../../events-store/event-store.interface'
+import { DiscoveryService, Reflector } from '@nestjs/core'
 
 @Injectable()
-export class MessagingEventSubscriber implements IMessageSource {
-  private bridge: Subject<any>
+export class MessagingEventSubscriber implements OnApplicationBootstrap {
+  private eventsHandlers = new Map<Type<IEvent>, IProjectionHandler<IEvent>>()
 
   constructor(
     private readonly consumer: KafkaConsumer,
-    @Inject('EVENTS') private readonly events: Type<IEvent>[],
+    private readonly discovery: DiscoveryService,
+    private readonly reflector: Reflector,
   ) {}
 
-  async connect(): Promise<void> {
-    await this.consumer.subscribe(
-      { topic: /Event$/, fromBeginning: true },
-      async ({ topic, message }) => {
-        for (const event of this.events) {
-          if (event.name === topic) {
-            const { payload } = message as EventData
-            const reconstructedEvent = this.reconstructEvent(event, payload)
+  async onApplicationBootstrap() {
+    this.registerProjections()
+    await this.listen()
+  }
 
-            return this.bridge.next(reconstructedEvent)
+  private registerProjections() {
+    const providers = this.discovery.getProviders()
+
+    for (const provider of providers) {
+      if (!provider.metatype) continue
+      if (!provider.instance) continue
+
+      const meta = this.reflector.get(PROJECTION_HANDLER_METADATA, provider.instance.constructor)
+
+      if (meta) {
+        this.eventsHandlers.set(meta, provider.instance)
+      }
+    }
+  }
+
+  private async listen(): Promise<void> {
+    await this.consumer.subscribe<DomainEvent>(
+      { topic: /Event$/, fromBeginning: true },
+      async ({ topic, content }) => {
+        for (const [event, handler] of this.eventsHandlers.entries()) {
+          if (event.name === topic) {
+            await handler.handle({
+              id: content.id,
+              type: content.type,
+              data: this.reconstructEvent(event, content.data),
+              aggregateType: content.aggregateType,
+              aggregateId: content.aggregateId,
+              version: content.version,
+              timestamp: new Date(content.timestamp),
+            })
           }
         }
       },
@@ -40,9 +67,5 @@ export class MessagingEventSubscriber implements IMessageSource {
 
     // Sinon, utiliser le constructeur normal
     return new EventClass(payload)
-  }
-
-  bridgeEventsTo<T extends IEvent>(subject: Subject<T>): any {
-    this.bridge = subject
   }
 }

@@ -1,29 +1,22 @@
-import { IEventPublisher } from '@nestjs/cqrs'
+import { Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common'
 import { KafkaProducer } from '../kafka/kafka.producer'
-import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common'
-import { EventStore } from '../../events-store/events-store'
-import { EVENT_STORE, EventData } from '../../events-store/event-store.interface'
+import { DomainEvent } from '../../events-store/event-store.interface'
 
 @Injectable()
-export class MessagingEventPublisher implements IEventPublisher<EventData>, OnModuleInit {
+export class MessagingEventPublisher implements OnApplicationBootstrap, OnApplicationShutdown {
   private readonly logger = new Logger('PUBLISHER')
 
-  constructor(
-    private readonly publisher: KafkaProducer,
-    @Inject(EVENT_STORE)
-    private readonly eventStore: EventStore,
-  ) {}
+  constructor(private readonly producer: KafkaProducer) {}
 
-  async onModuleInit() {
-    await this.publisher.connect()
+  async onApplicationBootstrap() {
+    await this.producer.connect()
   }
 
-  async publish(event: EventData) {
-    const content = await this.eventStore.saveEvent(event)
+  async onApplicationShutdown() {
+    await this.producer.disconnect()
+  }
 
-    const topic = event.payload.constructor.name
-    this.logger.debug(topic)
-
-    return this.publisher.send(topic, content)
+  async publish(event: DomainEvent) {
+    return this.producer.send(event.type, event)
   }
 }

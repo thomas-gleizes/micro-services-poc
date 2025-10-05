@@ -35,8 +35,7 @@ export class CreateProductHandler
       ),
     )
 
-    // await this.productCommandRepository.save(aggregate)
-    aggregate.commit()
+    await this.productCommandRepository.save(aggregate)
 
     return aggregate
   }

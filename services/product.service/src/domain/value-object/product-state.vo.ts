@@ -1,4 +1,4 @@
-export enum ProductStateEnum {
+export enum ProductStateValues {
   CREATED = 'CREATED',
   UPDATED = 'UPDATED',
   DISABLED = 'DISABLED',
@@ -7,50 +7,50 @@ export enum ProductStateEnum {
 }
 
 export class ProductState {
-  constructor(private readonly status: ProductStateEnum) {}
+  constructor(private readonly state: ProductStateValues) {}
 
   static created(): ProductState {
-    return new ProductState(ProductStateEnum.CREATED)
+    return new ProductState(ProductStateValues.CREATED)
   }
 
   static updated(): ProductState {
-    return new ProductState(ProductStateEnum.UPDATED)
+    return new ProductState(ProductStateValues.UPDATED)
   }
 
   static disabled(): ProductState {
-    return new ProductState(ProductStateEnum.DISABLED)
+    return new ProductState(ProductStateValues.DISABLED)
   }
 
   static enabled(): ProductState {
-    return new ProductState(ProductStateEnum.ENABLED)
+    return new ProductState(ProductStateValues.ENABLED)
   }
 
   static archived(): ProductState {
-    return new ProductState(ProductStateEnum.ARCHIVED)
+    return new ProductState(ProductStateValues.ARCHIVED)
   }
 
-  getValue(): ProductStateEnum {
-    return this.status
+  getValue(): ProductStateValues {
+    return this.state
   }
 
   isCreated(): boolean {
-    return this.status === ProductStateEnum.CREATED
+    return this.state === ProductStateValues.CREATED
   }
 
   isUpdated(): boolean {
-    return this.status === ProductStateEnum.UPDATED
+    return this.state === ProductStateValues.UPDATED
   }
 
   isEnabled(): boolean {
-    return this.status === ProductStateEnum.ENABLED
+    return this.state === ProductStateValues.ENABLED
   }
 
   isDisabled(): boolean {
-    return this.status === ProductStateEnum.DISABLED
+    return this.state === ProductStateValues.DISABLED
   }
 
   isArchived(): boolean {
-    return this.status === ProductStateEnum.ARCHIVED
+    return this.state === ProductStateValues.ARCHIVED
   }
 
   canDisable() {

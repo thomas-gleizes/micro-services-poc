@@ -1,7 +1,7 @@
 import { IEvent } from '@nestjs/cqrs'
-import { ProductStatus } from '../../../value-object/product-status.enum'
+import { ProductStatus } from '../../value-object/product-status.enum'
 
-export class ProductEnabledEvent implements IEvent {
+export class ProductDisabledEvent implements IEvent {
   constructor(
     public readonly productId: string,
     public readonly status: ProductStatus,

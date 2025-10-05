@@ -27,8 +27,7 @@ export class UpdateProductHandler
 
     aggregate.update(command.name, command.description, command.price, command.currency)
 
-    // await this.productCommandRepository.save(aggregate)
-    aggregate.commit()
+    await this.productCommandRepository.save(aggregate)
 
     return aggregate
   }

@@ -17,13 +17,13 @@ export class MessagingQueryHandler implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    await Promise.all([this.consumeQueries(), this.producer.connect()])
-    await this.consumer.run()
+    this.registreQueries()
+    // await this.consumer.run()
 
-    this.retrieveQueryHandlers()
+    // await Promise.all([this.consumeQueries(), this.producer.connect()])
   }
 
-  retrieveQueryHandlers() {
+  registreQueries() {
     const providers = this.discoveryService.getProviders()
 
     for (const wrapper of providers) {
@@ -38,7 +38,7 @@ export class MessagingQueryHandler implements OnModuleInit {
   async consumeQueries() {
     await this.consumer.subscribe(
       { topic: /Query$/, fromBeginning: false },
-      async ({ topic, message, metadata }) => {
+      async ({ topic, content, metadata }) => {
         const queryId = metadata.queryId
         if (!queryId) return this.logger.warn(`${topic} : queryId not found in metadata`)
 
@@ -46,7 +46,7 @@ export class MessagingQueryHandler implements OnModuleInit {
 
         if (!handler) return this.logger.warn(`${topic} : Handler not found`)
 
-        const result = await handler.execute(message)
+        const result = await handler.execute(content)
         await this.producer.send(`${topic}Reply`, result, { queryId })
       },
     )

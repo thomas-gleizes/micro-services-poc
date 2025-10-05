@@ -5,8 +5,8 @@ import { HealthController } from './presentation/controllers/health.controller'
 import { envSchema } from './infrastructure/config/environement/env'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { CqrsModule } from '@nestjs/cqrs'
-import { ReadableProductSchema } from './infrastructure/schemas/readableProductSchema'
-import { EventSchema } from './infrastructure/schemas/event.schema'
+import { ReadableProductSchema } from './infrastructure/persistance/schemas/readable-product.schema'
+import { EventSchema } from './infrastructure/persistance/schemas/event.schema'
 
 @Module({
   imports: [

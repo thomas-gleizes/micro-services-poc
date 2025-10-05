@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common'
-import { DataSource, Repository } from 'typeorm'
-import { EventData, IEventStore } from './event-store.interface'
-import { IEvent } from '@nestjs/cqrs'
-import { EventSchema } from '../schemas/event.schema'
 import { randomUUID } from 'node:crypto'
-import { InfrastructureException } from '../exceptions/infrastructure.exception'
+import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+import { DataSource, Repository } from 'typeorm'
+import { DomainEvent, IEventStore } from './event-store.interface'
+import { EventSchema } from '../persistance/schemas/event.schema'
+import { InfrastructureException } from '../exceptions/infrastructure.exception'
+import { AggregateRoot } from '../../shared/aggregate-root.interface'
+import { MessagingEventPublisher } from '../messaging/event/messaging-event.publisher'
 
 @Injectable()
 export class EventStore implements IEventStore {
@@ -13,55 +14,52 @@ export class EventStore implements IEventStore {
     private readonly source: DataSource,
     @InjectRepository(EventSchema)
     private readonly repository: Repository<EventSchema>,
+    private readonly publisher: MessagingEventPublisher,
   ) {}
 
-  async findEventByAggregate(aggregateId: string): Promise<EventData[]> {
+  async findEventByAggregate(aggregateId: string): Promise<DomainEvent[]> {
     const events = await this.repository.find({ where: { aggregateId }, order: { version: 'ASC' } })
 
     return events.map((event) => ({
       id: event.id,
       type: event.type,
       version: event.version,
-      payload: event.payload,
+      data: event.data,
       aggregateId: event.aggregateId,
       aggregateType: event.aggregateType,
       timestamp: event.timestamp,
     }))
   }
 
-  async save(
-    aggregateId: string,
-    aggregateType: string,
-    events: IEvent[],
-    expectVersion?: number,
-  ): Promise<void> {
+  async save(aggregate: AggregateRoot): Promise<void> {
     const runner = this.source.createQueryRunner()
     await runner.connect()
     await runner.startTransaction()
 
     try {
-      const eventVersion = await runner.manager.count(EventSchema, {
-        where: { aggregateType },
+      const events = aggregate.getUncommittedEvents().map((event, index) => ({ event, index }))
+
+      const eventsPlayed = await runner.manager.find(EventSchema, {
+        where: { aggregateId: aggregate.getAggregateId() },
       })
 
-      if (expectVersion) {
-        if (eventVersion !== expectVersion) {
-          throw new InfrastructureException('Version de concurrence invalide')
+      if (aggregate.version > 1) {
+        if (eventsPlayed.length !== aggregate.version) {
+          throw new InfrastructureException('Invalid version')
         }
       }
 
-      for (const { event, index } of events.map((event, index) => ({ event, index }))) {
-        console.log('Event', event)
-
-        await runner.manager.save(EventSchema, {
+      for (const { event, index } of events) {
+        const record = await runner.manager.save(EventSchema, {
           id: randomUUID(),
           type: event.constructor.name,
-          aggregateId: aggregateId,
-          aggregateType: aggregateType,
-          metadata: {},
-          payload: event,
-          version: eventVersion + index + 1,
+          aggregateId: aggregate.getAggregateId(),
+          aggregateType: aggregate.getAggregateType(),
+          data: event,
+          version: eventsPlayed.length + index + 1,
         })
+
+        await this.publisher.publish(record)
       }
 
       await runner.commitTransaction()
@@ -71,17 +69,5 @@ export class EventStore implements IEventStore {
     } finally {
       await runner.release()
     }
-  }
-
-  async saveEvent(event: EventData): Promise<EventSchema> {
-    return this.repository.save({
-      id: randomUUID(),
-      type: event.type,
-      aggregateType: event.aggregateType,
-      aggregateId: event.aggregateId,
-      metadata: {},
-      payload: event.payload,
-      version: event.version,
-    })
   }
 }

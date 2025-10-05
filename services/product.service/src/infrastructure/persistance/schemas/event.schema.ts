@@ -19,7 +19,7 @@ export class EventSchema {
   aggregateType: string
 
   @Column({ type: 'simple-json' })
-  payload: any
+  data: any
 
   @Column({ type: 'simple-json', nullable: true })
   metadata: any

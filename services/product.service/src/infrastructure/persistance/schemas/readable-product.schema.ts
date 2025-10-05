@@ -29,4 +29,7 @@ export class ReadableProductSchema {
 
   @Column({ type: 'datetime' })
   updatedAt: Date
+
+  @Column({ type: 'number', default: 1, name: '_version' })
+  _version: number
 }

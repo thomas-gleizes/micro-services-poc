@@ -1,6 +1,6 @@
 import { Kafka, Producer } from 'kafkajs'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { EventData } from '../../events-store/event-store.interface'
+import { DomainEvent } from '../../events-store/event-store.interface'
 
 @Injectable()
 export class KafkaProducer {
@@ -16,7 +16,11 @@ export class KafkaProducer {
     await this.producer.connect()
   }
 
-  async send(topic: string, message: EventData, metadata?: Record<string, string>) {
+  async disconnect() {
+    await this.producer.disconnect()
+  }
+
+  async send(topic: string, message: DomainEvent, metadata?: Record<string, string>) {
     this._logger.debug(topic)
 
     await this.producer.send({

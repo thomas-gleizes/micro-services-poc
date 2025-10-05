@@ -43,6 +43,4 @@ export interface IProductQueryRepository {
     filters: ProductFilters,
     pagination?: Pagination,
   ): Promise<PaginationResult<ReadProductModel>>
-
-  persistFromEvent(event: InstanceType<(typeof productEvents)[number]>): Promise<void>
 }

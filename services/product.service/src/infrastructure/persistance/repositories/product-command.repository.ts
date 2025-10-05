@@ -1,8 +1,8 @@
 import { ProductAggregate } from 'src/domain/aggregates/product.aggregate'
-import { IProductCommandRepository } from '../../domain/repositories/product-command-repository.interface'
+import { IProductCommandRepository } from '../../../domain/repositories/product-command-repository.interface'
 import { Inject, Injectable } from '@nestjs/common'
-import { ProductId } from '../../domain/value-object/product-id.vo'
-import { EVENT_STORE, IEventStore } from '../events-store/event-store.interface'
+import { ProductId } from '../../../domain/value-object/product-id.vo'
+import { EVENT_STORE, IEventStore } from '../../events-store/event-store.interface'
 import { EventPublisher } from '@nestjs/cqrs'
 
 @Injectable()
@@ -18,25 +18,17 @@ export class ProductCommandRepository implements IProductCommandRepository {
 
     if (events.length <= 0) return null
 
-    console.log('Events', events)
-
     const aggregate = new ProductAggregate()
 
     for (const event of events) {
-      aggregate.applyEvent(event.type, event.payload)
+      aggregate.applyEvent(event.type, event.data)
+      aggregate.version = event.version
     }
 
     return this.publisher.mergeObjectContext(aggregate)
   }
 
   async save(aggregate: ProductAggregate): Promise<void> {
-    const events = aggregate.getUncommittedEvents()
-
-    await this.eventStore.save(
-      aggregate.id.toString(),
-      ProductAggregate.name,
-      events,
-      Math.max(0, aggregate.version - events.length),
-    )
+    await this.eventStore.save(aggregate)
   }
 }

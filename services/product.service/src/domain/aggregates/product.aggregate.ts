@@ -1,13 +1,13 @@
 import { IEvent } from '@nestjs/cqrs'
-import { ProductCreatedEvent } from '../events/products/product-created/product-created.event'
+import { ProductCreatedEvent } from '../events/products/product-created.event'
 import { ProductState } from '../value-object/product-state.vo'
 import { ProductStatus } from '../value-object/product-status.enum'
 import { ProductId } from '../value-object/product-id.vo'
-import { ProductArchivedEvent } from '../events/products/product-archived/product-archived.event'
+import { ProductArchivedEvent } from '../events/products/product-archived.event'
 import { DomainException } from '../exceptions/domain.exception'
-import { ProductUpdatedEvent } from '../events/products/product-updated/product-updated.event'
-import { ProductEnabledEvent } from '../events/products/product-enabled/product-enabled.event'
-import { ProductDisabledEvent } from '../events/products/product-disabled/product-disabled.event'
+import { ProductUpdatedEvent } from '../events/products/product-updated.event'
+import { ProductEnabledEvent } from '../events/products/product-enabled.event'
+import { ProductDisabledEvent } from '../events/products/product-disabled.event'
 import { AggregateRoot } from '../../shared/aggregate-root.interface'
 
 export class ProductAggregate extends AggregateRoot {
@@ -194,11 +194,11 @@ export class ProductAggregate extends AggregateRoot {
     return this._state
   }
 
-  protected getAggregateId(): string {
+  public getAggregateId(): string {
     return this._id.toString()
   }
 
-  protected getAggregateType(): string {
-    return 'product'
+  public getAggregateType(): string {
+    return 'Product'
   }
 }

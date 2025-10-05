@@ -2,7 +2,7 @@
 GET {{baseURL}}/products/{{id}}
 
 ### GET all products
-GET {{baseURL}}/products?page=0&limit=20
+GET {{baseURL}}/productsF
 
 ### POST product
 POST {{baseURL}}/products

@@ -1,17 +1,18 @@
 import { Inject, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
 import { Consumer, Kafka } from 'kafkajs'
 import { ConfigService } from '@nestjs/config'
+import { DomainEvent } from '../../events-store/event-store.interface'
 
-type MessageHandler = (message: {
+export type MessageHandler<Content> = (message: {
   topic: string
-  message: any
+  content: Content
   metadata: { [key: string]: string }
 }) => void | Promise<void>
 
 export class KafkaConsumer implements OnModuleInit, OnModuleDestroy {
   private readonly _logger = new Logger('CONSUMER')
   private readonly consumer: Consumer
-  private readonly handlers = new Map<string | RegExp, MessageHandler>()
+  private readonly handlers = new Map<string | RegExp, MessageHandler<any>>()
 
   constructor(@Inject('KAFKA_BROKER') broker: Kafka, config: ConfigService) {
     this._logger.debug('INSTANCY CONSUMER')
@@ -33,12 +34,12 @@ export class KafkaConsumer implements OnModuleInit, OnModuleDestroy {
     await this.consumer.disconnect()
   }
 
-  public async subscribe(
+  public async subscribe<Content>(
     options: {
       topic: string | RegExp
       fromBeginning?: boolean
     },
-    handler: MessageHandler,
+    handler: MessageHandler<Content>,
   ) {
     this.handlers.set(options.topic, handler)
     await this.consumer.subscribe({ topic: options.topic, fromBeginning: options.fromBeginning })
@@ -59,13 +60,13 @@ export class KafkaConsumer implements OnModuleInit, OnModuleDestroy {
               ]),
             ) as { [key: string]: string }
 
-            const deserializeMessage = JSON.parse(message.value.toString()) as any
+            const content = JSON.parse(message.value.toString()) as any
 
             for (const [key, handler] of this.handlers.entries()) {
-              if (key === topic) await handler({ topic, message: deserializeMessage, metadata })
+              if (key === topic) await handler({ topic, content: content, metadata })
 
               if (typeof key === 'object' && (key as RegExp).test(topic)) {
-                await handler({ topic, message: deserializeMessage, metadata })
+                await handler({ topic, content: content, metadata })
               }
             }
           }
@@ -80,7 +81,6 @@ export class KafkaConsumer implements OnModuleInit, OnModuleDestroy {
           this._logger.debug(`${topic} COMMITED`)
         } catch (e) {
           this._logger.error(e)
-          throw e
         }
       },
     })

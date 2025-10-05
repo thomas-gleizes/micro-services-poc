@@ -16,13 +16,12 @@ export class MessagingCommandHandler implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    await Promise.all([this.consumeCommands(), this.producer.connect()])
-    await this.consumer.run()
-
-    this.retrieveCommandClass()
+    this.registreCommands()
+    // await Promise.all([this.consumeCommands(), this.producer.connect()])
+    // await this.consumer.run()
   }
 
-  retrieveCommandClass() {
+  registreCommands() {
     const providers = this.discoveryService.getProviders()
 
     for (const wrapper of providers) {
@@ -37,14 +36,14 @@ export class MessagingCommandHandler implements OnModuleInit {
   async consumeCommands() {
     await this.consumer.subscribe(
       { topic: /Command$/, fromBeginning: false },
-      async ({ topic, message, metadata }) => {
+      async ({ topic, content, metadata }) => {
         const commandId = metadata.commandId
         if (!commandId) throw new Error(`${topic} : commandId not found in metadata`)
 
         const handler = this.handlers.get(topic)
         if (!handler) throw new Error(`${topic} : Handler not found`)
 
-        const result = await handler.execute(message)
+        const result = await handler.execute(content)
         await this.producer.send(`${topic}Reply`, result, { commandId })
       },
     )
