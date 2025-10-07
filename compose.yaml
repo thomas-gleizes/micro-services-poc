@@ -52,13 +52,13 @@ services:
 
   product_service:
     build: .docker/node
-    container_name: event_product_service
+    container_name: Kalat.Modules.Product
     command: bash -c "yarn install --immutable && yarn run start:dev"
     ports:
-      - "3000:3000"
-    working_dir: "/var/www/app"
+      - "3001:3000"
+    working_dir: /usr/src/Kalat.Modules.Product
     volumes:
-      - ./services/product.service:/var/www/app
+      - ./services/Kalat.Modules.Product:/usr/src/Kalat.Modules.Product
     environment:
       PORT: 3000
       DATABASE_URL: "mongodb://product_db:27017/product_db"
@@ -78,7 +78,6 @@ services:
   product_db:
     image: mongo:latest
     container_name: event_product_db
-    restart: always
     ports:
       - "27017:27017"
     volumes:
