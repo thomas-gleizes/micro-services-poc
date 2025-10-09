@@ -23,31 +23,27 @@ spec:
           image: registry.thomasgleizes.fr/eventsourcing/product-service:prod
           imagePullPolicy: Always
           ports:
-            - containerPort: 3000
+            - containerPort: 80
           env:
             - name: PORT
-              value: "3000"
+              value: "80"
             - name: DATABASE_URL
-              value: "postgresql://product:password@product-db:5432/product?schema=public"
+              value: "mongodb://product-database:27017/products"
             - name: KAFKA_BROKER
               value: "kafka:9092"
-            - name: KAFKA_GROUP_ID
+            - name: KAFKA_CONSUMER_GROUP
               value: "product_service"
-            - name: QUERY_TIMEOUT
-              value: "45000"
             - name: NODE_ENV
               value: "production"
-            - name: KAFKA_CONSUMER_GROUP
-              value: product_service
           livenessProbe:
             httpGet:
               path: /health-check
-              port: 3000
+              port: 80
             initialDelaySeconds: 30
             periodSeconds: 30
           readinessProbe:
             httpGet:
               path: /health-check
-              port: 3000
-            initialDelaySeconds: 20
-            periodSeconds: 20
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 60

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: product
+  name: product-database
+  labels:
+    app: product-database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product-database
+  template:
+    metadata:
+      labels:
+        app: product-database
+
+    spec:
+      containers:
+        - name: product-database
+          image: mongo:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - mountPath: /data/db
+              name: product-storage
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: product-storage
+          persistentVolumeClaim:
+            claimName: mongo-pvc
+      restartPolicy: Always

@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   namespace: product
-  name: postgres-pv
+  name: mongo-pv
 spec:
   capacity:
     storage: 200Mi
@@ -11,13 +11,13 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: manual
   hostPath:
-    path: /tmp/postgres-data
+    path: /tmp/mongo-data
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   namespace: product
-  name: postgres-pvc
+  name: mongo-pvc
 spec:
   accessModes:
     - ReadWriteOnce
