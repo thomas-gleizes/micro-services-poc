@@ -1,8 +1,6 @@
 - name: Setup Kubernetes Control Plane
-  hosts: localhost
-  connection: local
   become: yes
-
+  hosts: control-plane
   tasks:
     # Include system preparation tasks
     - name: System preparation
