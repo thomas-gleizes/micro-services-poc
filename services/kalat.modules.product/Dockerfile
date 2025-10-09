@@ -8,7 +8,6 @@ COPY . .
 
 RUN yarn workspaces focus --production && \
     yarn install && \
-    yarn prisma generate && \
     yarn build && \
     yarn cache clear --all
 
@@ -30,10 +29,10 @@ ENV NODE_ENV=production
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/package.json ./
-COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
 
 USER nestjs
 
+ENV PORT=80
 EXPOSE 80
 
 CMD ["node", "dist/src/main.js"]

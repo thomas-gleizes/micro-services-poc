@@ -11,7 +11,7 @@ networks:
 services:
   kafka:
     image: apache/kafka:4.0.0
-    container_name: event_bus
+    container_name: Kalat.System.Kafka
     volumes:
       - kafka-data:/var/lib/kafka/data
     networks:
@@ -35,7 +35,7 @@ services:
 
   kafka_ui:
     image: provectuslabs/kafka-ui:latest
-    container_name: event_ui
+    container_name: Kalat.System.Kafka_ui
     ports:
       - "8080:8080"
     networks:
@@ -77,7 +77,7 @@ services:
 
   product_db:
     image: mongo:latest
-    container_name: event_product_db
+    container_name: Kalat.Data.Product
     ports:
       - "27017:27017"
     volumes:

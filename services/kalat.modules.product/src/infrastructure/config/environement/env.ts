@@ -1,6 +1,7 @@
 import * as joi from 'joi'
 
 export const envSchema = joi.object({
+  NODE_ENV: joi.string().default('development'),
   PORT: joi.number().default(3000),
   DATABASE_URL: joi.string().uri().required(),
   KAFKA_BROKER: joi.string().required(),

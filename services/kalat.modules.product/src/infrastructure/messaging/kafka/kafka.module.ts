@@ -12,7 +12,7 @@ import { KafkaConsumer } from './kafka.consumer'
       useFactory: (config: ConfigService) =>
         new Kafka({
           brokers: [config.get<string>('KAFKA_BROKER', 'event_bus:9092')],
-          logLevel: logLevel.WARN,
+          logLevel: logLevel.DEBUG,
         }),
       inject: [ConfigService],
     },

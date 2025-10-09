@@ -16,7 +16,7 @@ import { EventSchema } from './infrastructure/persistance/schemas/event.schema'
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'mongodb',
-        url: config.get<string>('DATABASE_URL'),
+        url: config.getOrThrow<string>('DATABASE_URL'),
         entities: [ReadableProductSchema, EventSchema],
         synchronize: true,
       }),

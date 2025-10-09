@@ -1,7 +1,6 @@
 import { Inject, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
 import { Consumer, Kafka } from 'kafkajs'
 import { ConfigService } from '@nestjs/config'
-import { DomainEvent } from '../../events-store/event-store.interface'
 
 export type MessageHandler<Content> = (message: {
   topic: string
