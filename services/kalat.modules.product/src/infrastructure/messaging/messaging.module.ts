@@ -1,14 +1,26 @@
-import { Module } from '@nestjs/common'
-import { KafkaModule } from './kafka/kafka.module'
-import { CqrsModule } from '@nestjs/cqrs'
-import { ConfigModule } from '@nestjs/config'
+import { Global, Module } from '@nestjs/common'
+import { KafkaModule } from '../kafka/kafka.module'
+import { ConfigService } from '@nestjs/config'
 import { DiscoveryModule } from '@nestjs/core'
-import { MessagingEventSubscriber } from './event/messaging.event.subscriber'
-import { MessagingEventPublisher } from './event/messaging-event.publisher'
+import { MessagingProjectionSubscriber } from './event/messaging-projection.subscriber'
+import { MessagingPublisher } from './messaging.publisher'
+import { MESSAGING_BASE } from './messaging.token'
+import { KafkaRunner } from '../kafka/kafka.runner'
 
+@Global()
 @Module({
-  imports: [KafkaModule, ConfigModule, DiscoveryModule, CqrsModule],
-  providers: [MessagingEventPublisher, MessagingEventSubscriber],
-  exports: [MessagingEventPublisher],
+  imports: [KafkaModule, DiscoveryModule],
+  providers: [
+    MessagingPublisher,
+    MessagingProjectionSubscriber,
+    {
+      provide: MESSAGING_BASE,
+      useFactory: (config: ConfigService) =>
+        `${config.getOrThrow('SERVICE_NAME')}.${config.getOrThrow('SERVICE_VERSION')}`,
+      inject: [ConfigService],
+    },
+    KafkaRunner,
+  ],
+  exports: [MessagingPublisher],
 })
 export class MessagingModule {}

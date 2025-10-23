@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core'
-import { Logger, ValidationPipe } from '@nestjs/common'
+import { LogLevel, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { AppModule } from './app.module'
 import { HttpLoggingInterceptor } from './presentation/interceptor/http-logging-interceptor'
@@ -10,8 +10,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   const config = app.get(ConfigService)
-  const logger = new Logger('Main')
 
+  app.useLogger([config.get<LogLevel>('LOG_LEVEL', 'log')])
   app.useGlobalFilters(new DomainExceptionFilters())
   app.useGlobalFilters(new GlobalExceptionFilters())
   app.useGlobalPipes(new ValidationPipe({ transform: true }))
@@ -31,7 +31,6 @@ async function bootstrap() {
   })
 
   await app.listen(config.get<number>('PORT', 3000))
-  logger.debug(`APP STARTED ON PORT ${config.get<number>('PORT')}`)
 }
 
 void bootstrap()

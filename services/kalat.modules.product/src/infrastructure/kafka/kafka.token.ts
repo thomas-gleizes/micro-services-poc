@@ -1,0 +1,3 @@
+export const KAFKA_BROKER = Symbol('KAFKA_BROKER')
+export const KAFKA_PROJECTION_CONSUMER = Symbol('KAFKA_PROJECTION_CONSUMER')
+export const KAFKA_CONSUMER = Symbol('KAFKA_CONSUMER')

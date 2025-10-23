@@ -7,6 +7,8 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { CqrsModule } from '@nestjs/cqrs'
 import { ReadableProductSchema } from './infrastructure/persistance/schemas/readable-product.schema'
 import { EventSchema } from './infrastructure/persistance/schemas/event.schema'
+import { MessagingModule } from './infrastructure/messaging/messaging.module'
+import { EventStoreModule } from './infrastructure/events-store/event-store.module'
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { EventSchema } from './infrastructure/persistance/schemas/event.schema'
         synchronize: true,
       }),
     }),
+    EventStoreModule,
+    MessagingModule,
     CqrsModule,
     ProductModule,
   ],

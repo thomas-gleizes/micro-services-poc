@@ -1,7 +1,7 @@
 import { IEvent } from '@nestjs/cqrs'
 import { AggregateRoot } from '../../shared/aggregate-root.interface'
 
-export interface DomainEvent<Data extends IEvent = IEvent> {
+export interface EventData<Data extends IEvent = IEvent> {
   // id of event
   id: string
 
@@ -12,7 +12,7 @@ export interface DomainEvent<Data extends IEvent = IEvent> {
   version: number
 
   // content of event
-  data: Data
+  payload: Data
 
   // id of aggregate
   aggregateId: string
@@ -21,7 +21,7 @@ export interface DomainEvent<Data extends IEvent = IEvent> {
   aggregateType: string
 
   // date of producing event
-  timestamp: Date
+  created_at: Date
 }
 
 export const EVENT_STORE = Symbol('EVENT_STORE')
@@ -29,5 +29,5 @@ export const EVENT_STORE = Symbol('EVENT_STORE')
 export interface IEventStore {
   save(aggregate: AggregateRoot): Promise<void>
 
-  findEventByAggregate(aggregateId: string): Promise<DomainEvent[]>
+  findEventByAggregate(aggregateId: string): Promise<EventData[]>
 }

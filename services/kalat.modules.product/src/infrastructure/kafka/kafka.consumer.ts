@@ -1,4 +1,4 @@
-import { Inject, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
+import { Logger } from '@nestjs/common'
 import { Consumer, Kafka } from 'kafkajs'
 import { ConfigService } from '@nestjs/config'
 
@@ -8,29 +8,24 @@ export type MessageHandler<Content> = (message: {
   metadata: { [key: string]: string }
 }) => void | Promise<void>
 
-export class KafkaConsumer implements OnModuleInit, OnModuleDestroy {
+export class KafkaConsumer {
   private readonly _logger = new Logger('CONSUMER')
   private readonly consumer: Consumer
   private readonly handlers = new Map<string | RegExp, MessageHandler<any>>()
 
-  constructor(@Inject('KAFKA_BROKER') broker: Kafka, config: ConfigService) {
-    this._logger.debug('INSTANCY CONSUMER')
+  constructor(
+    broker: Kafka,
+    config: ConfigService,
+    private readonly groupId: string,
+  ) {
     this.consumer = broker.consumer({
-      groupId: config.get<string>('KAFKA_CONSUMER_GROUP')!,
+      groupId: this.groupId,
       allowAutoTopicCreation: false,
       retry: {
-        retries: config.get<number>('KAFKA_CONSUMER_RETRIES'),
-        initialRetryTime: config.get<number>('KAFKA_CONSUMER_INITIAL_RETRY_TIME'),
+        retries: config.get<number>('KAFKA_CONSUMER_RETRIES', 10),
+        initialRetryTime: config.get<number>('KAFKA_CONSUMER_INITIAL_RETRY_TIME', 1000),
       },
     })
-  }
-
-  async onModuleInit() {
-    await this.consumer.connect()
-  }
-
-  async onModuleDestroy() {
-    await this.consumer.disconnect()
   }
 
   public async subscribe<Content>(
@@ -45,6 +40,7 @@ export class KafkaConsumer implements OnModuleInit, OnModuleDestroy {
   }
 
   public async run() {
+    await this.consumer.connect()
     await this.consumer.run({
       autoCommit: false,
       eachMessage: async ({ topic, message, partition }) => {
@@ -83,5 +79,9 @@ export class KafkaConsumer implements OnModuleInit, OnModuleDestroy {
         }
       },
     })
+  }
+
+  public disconnect() {
+    this.consumer.disconnect()
   }
 }

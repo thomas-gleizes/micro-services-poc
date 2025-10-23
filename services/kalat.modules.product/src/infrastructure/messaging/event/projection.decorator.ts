@@ -1,4 +1,4 @@
-import { DomainEvent } from '../../events-store/event-store.interface'
+import { EventData } from '../../events-store/event-store.interface'
 import { IEvent } from '@nestjs/cqrs'
 import { Injectable, SetMetadata } from '@nestjs/common'
 
@@ -19,5 +19,5 @@ export function Projection<T extends IEvent>(eventClass: new (...args: any[]) =>
 }
 
 export interface IProjectionHandler<Data extends IEvent> {
-  handle(event: DomainEvent<Data>): Promise<void>
+  handle(event: EventData<Data>): Promise<void>
 }

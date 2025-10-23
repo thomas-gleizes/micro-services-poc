@@ -1,6 +1,6 @@
 import { IProjectionHandler, Projection } from '../../messaging/event/projection.decorator'
 import { ProductUpdatedEvent } from '../../../domain/events/products/product-updated.event'
-import { DomainEvent } from 'src/infrastructure/events-store/event-store.interface'
+import { EventData } from 'src/infrastructure/events-store/event-store.interface'
 import { Repository } from 'typeorm'
 import { ReadableProductSchema } from '../schemas/readable-product.schema'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -13,18 +13,18 @@ export class ProductUpdatedProjection implements IProjectionHandler<ProductUpdat
     private readonly repository: Repository<ReadableProductSchema>,
   ) {}
 
-  async handle(event: DomainEvent<ProductUpdatedEvent>): Promise<void> {
+  async handle(event: EventData<ProductUpdatedEvent>): Promise<void> {
     const result = await this.repository.update(
       {
         id: event.aggregateId,
         _version: event.version - 1,
       },
       {
-        name: event.data.name,
-        description: event.data.description,
-        price: event.data.price,
-        currency: event.data.currency,
-        updatedAt: event.data.currency,
+        name: event.payload.name,
+        description: event.payload.description,
+        price: event.payload.price,
+        currency: event.payload.currency,
+        updatedAt: event.payload.currency,
         _version: event.version,
       },
     )

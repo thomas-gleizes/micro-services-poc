@@ -1,6 +1,6 @@
 import { IProjectionHandler, Projection } from '../../messaging/event/projection.decorator'
 import { ProductCreatedEvent } from '../../../domain/events/products/product-created.event'
-import { DomainEvent } from '../../events-store/event-store.interface'
+import { EventData } from '../../events-store/event-store.interface'
 import { Repository } from 'typeorm'
 import { InjectRepository } from '@nestjs/typeorm'
 import { ReadableProductSchema } from '../schemas/readable-product.schema'
@@ -12,16 +12,16 @@ export class ProductCreatedProjection implements IProjectionHandler<ProductCreat
     private readonly repository: Repository<ReadableProductSchema>,
   ) {}
 
-  async handle(event: DomainEvent<ProductCreatedEvent>) {
+  async handle(event: EventData<ProductCreatedEvent>) {
     await this.repository.save({
       id: event.aggregateId,
-      name: event.data.name,
-      description: event.data.name,
-      price: event.data.price,
-      currency: event.data.currency,
-      isAvailable: event.data.status === 'AVAILABLE',
-      createdAt: event.data.createdAt,
-      updatedAt: event.data.updatedAt,
+      name: event.payload.name,
+      description: event.payload.name,
+      price: event.payload.price,
+      currency: event.payload.currency,
+      isAvailable: event.payload.status === 'AVAILABLE',
+      createdAt: event.payload.createdAt,
+      updatedAt: event.payload.updatedAt,
       _version: event.version,
     })
   }

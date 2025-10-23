@@ -21,7 +21,7 @@ export class ProductCommandRepository implements IProductCommandRepository {
     const aggregate = new ProductAggregate()
 
     for (const event of events) {
-      aggregate.applyEvent(event.type, event.data)
+      aggregate.applyEvent(event.type, event.payload)
       aggregate.version = event.version
     }
 

@@ -28,5 +28,5 @@ export class EventSchema {
   version: number
 
   @Column({ type: 'datetime' })
-  timestamp: Date
+  createdAt: Date
 }

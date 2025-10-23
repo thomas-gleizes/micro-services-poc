@@ -8,22 +8,14 @@ import { PRODUCT_COMMAND_REPOSITORY } from '../../domain/repositories/product-co
 import { ProductCommandRepository } from '../../infrastructure/persistance/repositories/product-command.repository'
 import { ReadableProductSchema } from '../../infrastructure/persistance/schemas/readable-product.schema'
 import { ProductMapper } from '../../presentation/mappers/product.mapper'
-import { EVENT_STORE } from '../../infrastructure/events-store/event-store.interface'
-import { EventStore } from '../../infrastructure/events-store/events-store'
-import { EventSchema } from '../../infrastructure/persistance/schemas/event.schema'
 import { PRODUCT_QUERY_REPOSITORY } from '../../domain/repositories/product-query-repository.interface'
 import { ProductQueryRepository } from '../../infrastructure/persistance/repositories/product-query.repository'
 import { IDENTIFIANT_GENERATOR } from '../../domain/ports/identifiant-generator.port'
 import { IdentifiantGeneratorAdapter } from '../../infrastructure/adapters/identifiant-generator-adapter.service'
-import { MessagingModule } from '../../infrastructure/messaging/messaging.module'
 import { productProjections } from '../../infrastructure/persistance/projection'
 
 @Module({
-  imports: [
-    CqrsModule,
-    MessagingModule,
-    TypeOrmModule.forFeature([ReadableProductSchema, EventSchema]),
-  ],
+  imports: [CqrsModule, TypeOrmModule.forFeature([ReadableProductSchema])],
   controllers: [ProductController],
   providers: [
     ProductMapper,
@@ -34,10 +26,6 @@ import { productProjections } from '../../infrastructure/persistance/projection'
     {
       provide: PRODUCT_COMMAND_REPOSITORY,
       useClass: ProductCommandRepository,
-    },
-    {
-      provide: EVENT_STORE,
-      useClass: EventStore,
     },
     {
       provide: IDENTIFIANT_GENERATOR,

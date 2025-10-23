@@ -1,6 +1,7 @@
 import { Kafka, Producer } from 'kafkajs'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { DomainEvent } from '../../events-store/event-store.interface'
+import { Message } from '../messaging/message.interface'
+import { KAFKA_BROKER } from './kafka.token'
 
 @Injectable()
 export class KafkaProducer {
@@ -8,24 +9,24 @@ export class KafkaProducer {
 
   private readonly producer: Producer
 
-  constructor(@Inject('KAFKA_BROKER') broker: Kafka) {
+  constructor(@Inject(KAFKA_BROKER) broker: Kafka) {
     this.producer = broker.producer({ allowAutoTopicCreation: true })
   }
 
-  async connect() {
-    await this.producer.connect()
+  connect() {
+    return this.producer.connect()
   }
 
-  async disconnect() {
-    await this.producer.disconnect()
+  disconnect() {
+    return this.producer.disconnect()
   }
 
-  async send(topic: string, message: DomainEvent, metadata?: Record<string, string>) {
+  async send<M extends Message<any, any>>(topic: string, message: M) {
     this._logger.debug(topic)
 
     await this.producer.send({
       topic: topic,
-      messages: [{ value: JSON.stringify(message), headers: metadata }],
+      messages: [{ value: JSON.stringify(message) }],
     })
   }
 }

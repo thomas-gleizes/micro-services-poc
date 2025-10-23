@@ -1,21 +1,34 @@
 import { IEvent } from '@nestjs/cqrs'
-import { Injectable, OnApplicationBootstrap, Type } from '@nestjs/common'
-import { KafkaConsumer } from '../kafka/kafka.consumer'
+import {
+  Inject,
+  Injectable,
+  Logger,
+  OnApplicationBootstrap,
+  OnModuleInit,
+  Type,
+} from '@nestjs/common'
+import { KafkaConsumer } from '../../kafka/kafka.consumer'
 import { IProjectionHandler, PROJECTION_HANDLER_METADATA } from './projection.decorator'
-import { DomainEvent } from '../../events-store/event-store.interface'
 import { DiscoveryService, Reflector } from '@nestjs/core'
+import { DomainEvent } from '../message.interface'
+import { KAFKA_PROJECTION_CONSUMER } from '../../kafka/kafka.token'
+import { MESSAGING_BASE } from '../messaging.token'
 
 @Injectable()
-export class MessagingEventSubscriber implements OnApplicationBootstrap {
-  private eventsHandlers = new Map<Type<IEvent>, IProjectionHandler<IEvent>>()
+export class MessagingProjectionSubscriber implements OnModuleInit {
+  private readonly logger = new Logger('PROJECTION_SUBSCRIBER')
+  private readonly eventsHandlers = new Map<Type<IEvent>, IProjectionHandler<IEvent>>()
 
   constructor(
+    @Inject(KAFKA_PROJECTION_CONSUMER)
     private readonly consumer: KafkaConsumer,
     private readonly discovery: DiscoveryService,
     private readonly reflector: Reflector,
+    @Inject(MESSAGING_BASE)
+    private readonly messagingBase: string,
   ) {}
 
-  async onApplicationBootstrap() {
+  async onModuleInit() {
     this.registerProjections()
     await this.listen()
   }
@@ -36,26 +49,28 @@ export class MessagingEventSubscriber implements OnApplicationBootstrap {
   }
 
   private async listen(): Promise<void> {
-    await this.consumer.subscribe<DomainEvent>(
-      { topic: /Event$/, fromBeginning: true },
+    this.logger.log('Listen : ' + Array.from(this.eventsHandlers.keys()).map((event) => event.name))
+
+    const regex = new RegExp(`Kalat\.Modules\.Product\.v1alpha\.domain\..[A-Za-z0-9]+$`)
+
+    await this.consumer.subscribe<DomainEvent<any>>(
+      { topic: regex, fromBeginning: true },
       async ({ topic, content }) => {
         for (const [event, handler] of this.eventsHandlers.entries()) {
           if (event.name === topic) {
             await handler.handle({
               id: content.id,
-              type: content.type,
-              data: this.reconstructEvent(event, content.data),
-              aggregateType: content.aggregateType,
-              aggregateId: content.aggregateId,
+              type: content.content_type,
+              payload: this.reconstructEvent(event, content.payload),
+              aggregateType: content.content_type,
+              aggregateId: content.aggregate_id,
               version: content.version,
-              timestamp: new Date(content.timestamp),
+              created_at: new Date(content.created_at),
             })
           }
         }
       },
     )
-
-    await this.consumer.run()
   }
 
   private reconstructEvent(EventClass: Type<IEvent>, payload: any): IEvent {
