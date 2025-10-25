@@ -1,6 +1,6 @@
-- name: Setup Kubernetes Control Plane
+- name: Setup k8s master
   become: yes
-  hosts: control-plane
+  hosts: master
   tasks:
     # Include system preparation tasks
     - name: System preparation

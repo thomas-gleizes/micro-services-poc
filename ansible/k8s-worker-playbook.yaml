@@ -1,0 +1,15 @@
+- name: setup k8s worker
+  become: yes
+  hosts: workers
+  tasks:
+    # Include system preparation tasks
+    - name: System preparation
+      include_tasks: tasks/system_prep.yaml
+
+    # Include Kubernetes installation and configuration tasks
+    - name: Kubernetes setup
+      include_tasks: tasks/kubernetes_setup.yaml
+
+    # Include Docker/containerd installation and configuration tasks
+    - name: Containerd setup
+      include_tasks: tasks/containerd_setup.yaml

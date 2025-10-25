@@ -1,17 +1,15 @@
 import { Global, Module } from '@nestjs/common'
 import { EVENT_STORE } from './event-store.interface'
 import { EventStore } from './events-store'
-import { TypeOrmModule } from '@nestjs/typeorm'
-import { EventSchema } from '../persistance/schemas/event.schema'
+import { OutboxService } from './outbox/outbox.service'
+import { OutboxProcessorService } from './outbox/outbox-processor.service'
 
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([EventSchema])],
   providers: [
-    {
-      provide: EVENT_STORE,
-      useClass: EventStore,
-    },
+    { provide: EVENT_STORE, useClass: EventStore },
+    OutboxService,
+    OutboxProcessorService,
   ],
   exports: [EVENT_STORE],
 })

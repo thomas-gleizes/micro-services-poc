@@ -1,24 +1,23 @@
 import { IProjectionHandler, Projection } from '../../messaging/event/projection.decorator'
 import { ProductArchivedEvent } from '../../../domain/events/products/product-archived.event'
 import { EventData } from 'src/infrastructure/events-store/event-store.interface'
-import { Repository } from 'typeorm'
-import { ReadableProductSchema } from '../schemas/readable-product.schema'
-import { InjectRepository } from '@nestjs/typeorm'
-import { ConflictUpdateException } from '../../exceptions/conflict-update.exception'
+import { PrismaService } from '../../../shared/prisma/prisma.service'
+import { Prisma } from '@prisma/client'
+import { RecordNotFoundException } from '../../exceptions/record-not-found.exception'
 
 @Projection(ProductArchivedEvent)
 export class ProductArchivedProjection implements IProjectionHandler<ProductArchivedEvent> {
-  constructor(
-    @InjectRepository(ReadableProductSchema)
-    private readonly repository: Repository<ReadableProductSchema>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async handle(event: EventData<ProductArchivedEvent>): Promise<void> {
-    const result = await this.repository.delete({
-      id: event.aggregateId,
-      _version: event.version - 1,
-    })
-
-    if (!result.affected) throw new ConflictUpdateException()
+    try {
+      await this.prisma.readableProduct.delete({ where: { id: event.aggregateId } })
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === '2022') {
+          throw new RecordNotFoundException()
+        }
+      }
+    }
   }
 }

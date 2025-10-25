@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common'
-import { Repository } from 'typeorm'
-import { ReadableProductSchema } from '../schemas/readable-product.schema'
-import { InjectRepository } from '@nestjs/typeorm'
 import { ProductId } from '../../../domain/value-object/product-id.vo'
+import { PrismaService } from '../../../shared/prisma/prisma.service'
+import { ReadableProduct } from '@prisma/client'
 import {
   IProductQueryRepository,
   Pagination,
@@ -13,12 +12,9 @@ import {
 
 @Injectable()
 export class ProductQueryRepository implements IProductQueryRepository {
-  constructor(
-    @InjectRepository(ReadableProductSchema)
-    private readonly repo: Repository<ReadableProductSchema>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  mapToModel(record: ReadableProductSchema): ReadProductModel {
+  mapToModel(record: ReadableProduct): ReadProductModel {
     return {
       id: record.id,
       name: record.name,
@@ -32,7 +28,7 @@ export class ProductQueryRepository implements IProductQueryRepository {
   }
 
   async findById(id: ProductId): Promise<ReadProductModel | null> {
-    const record = await this.repo.findOneBy({ id: id.toString() })
+    const record = await this.prisma.readableProduct.findUnique({ where: { id: id.toString() } })
 
     if (!record) {
       return null
@@ -48,7 +44,7 @@ export class ProductQueryRepository implements IProductQueryRepository {
     const page = pagination?.page ?? 1
     const size = pagination?.limit ?? 20
 
-    const [records, total] = await this.repo.findAndCount({
+    const records = await this.prisma.readableProduct.findMany({
       where: filters,
       skip: (page - 1) * size,
       take: size,
@@ -58,7 +54,7 @@ export class ProductQueryRepository implements IProductQueryRepository {
       meta: {
         offset: page,
         size: pagination?.limit ?? 20,
-        total: total,
+        total: await this.prisma.readableProduct.count({ where: filters }),
       },
       data: records.map((record) => this.mapToModel(record)),
     }

@@ -21,12 +21,12 @@ export class KafkaProducer {
     return this.producer.disconnect()
   }
 
-  async send<M extends Message<any, any>>(topic: string, message: M) {
+  async send<M extends Message<any, any>>(topic: string, messages: M[], partitionKey: string) {
     this._logger.debug(topic)
 
     await this.producer.send({
       topic: topic,
-      messages: [{ value: JSON.stringify(message) }],
+      messages: messages.map((message) => ({ key: partitionKey, value: JSON.stringify(message) })),
     })
   }
 }

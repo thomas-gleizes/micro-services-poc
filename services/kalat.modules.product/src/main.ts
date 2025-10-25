@@ -8,7 +8,7 @@ import { GlobalExceptionFilters } from './presentation/exception-filters/global-
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create(AppModule, { logger: ['verbose'] })
   const config = app.get(ConfigService)
 
   app.useLogger([config.get<LogLevel>('LOG_LEVEL', 'log')])

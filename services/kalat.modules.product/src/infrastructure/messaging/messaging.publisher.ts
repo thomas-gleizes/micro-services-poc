@@ -13,23 +13,29 @@ export class MessagingPublisher {
     private readonly config: ConfigService,
   ) {}
 
-  async publishEvent<I extends IEvent>(event: EventData<I>) {
-    const topic = `${this.messagingBase}.domain.${event.aggregateType}`
+  async publishEvent(events: EventData[]) {
+    if (events.length === 0) return
+    const firstEvent = events[0]
 
+    const topic = `${this.messagingBase}.domain.${firstEvent.aggregateType}`
     const createdBy = this.config.getOrThrow<string>('SERVICE_NAME')
 
-    return this.producer.send(topic, {
-      id: event.id,
-      version: event.version,
-      aggregate_id: event.aggregateId,
-      state: event.type,
-      content_type: `${this.messagingBase}.domain.${event.type}`,
-      payload: event.payload,
-      created_by: createdBy,
-      created_at: event.created_at.toISOString(),
-      metadata: {
-        tenant_id: '1',
-      },
-    })
+    return this.producer.send(
+      topic,
+      events.map((event) => ({
+        id: event.id,
+        version: event.version,
+        aggregate_id: event.aggregateId,
+        state: event.type,
+        content_type: `${this.messagingBase}.domain.${event.type}`,
+        payload: event.payload,
+        created_by: createdBy,
+        created_at: event.createdAt.toISOString(),
+        metadata: {
+          tenant_id: '1',
+        },
+      })),
+      firstEvent.aggregateId,
+    )
   }
 }

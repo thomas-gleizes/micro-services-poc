@@ -1,12 +1,5 @@
 import { IEvent } from '@nestjs/cqrs'
-import {
-  Inject,
-  Injectable,
-  Logger,
-  OnApplicationBootstrap,
-  OnModuleInit,
-  Type,
-} from '@nestjs/common'
+import { Inject, Injectable, Logger, OnModuleInit, Type } from '@nestjs/common'
 import { KafkaConsumer } from '../../kafka/kafka.consumer'
 import { IProjectionHandler, PROJECTION_HANDLER_METADATA } from './projection.decorator'
 import { DiscoveryService, Reflector } from '@nestjs/core'
@@ -51,7 +44,9 @@ export class MessagingProjectionSubscriber implements OnModuleInit {
   private async listen(): Promise<void> {
     this.logger.log('Listen : ' + Array.from(this.eventsHandlers.keys()).map((event) => event.name))
 
-    const regex = new RegExp(`Kalat\.Modules\.Product\.v1alpha\.domain\..[A-Za-z0-9]+$`)
+    const base = `${this.messagingBase}.domain.`
+
+    const regex = new RegExp(`${base.replaceAll('.', '\\.')}'.[A-Za-z0-9]+$'`)
 
     await this.consumer.subscribe<DomainEvent<any>>(
       { topic: regex, fromBeginning: true },
@@ -65,7 +60,7 @@ export class MessagingProjectionSubscriber implements OnModuleInit {
               aggregateType: content.content_type,
               aggregateId: content.aggregate_id,
               version: content.version,
-              created_at: new Date(content.created_at),
+              createdAt: new Date(content.created_at),
             })
           }
         }
