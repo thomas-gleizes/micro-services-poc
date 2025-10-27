@@ -24,6 +24,7 @@ COPY --from=builder --chown=nestjs:nodejs /app/package.json ./
 
 USER nestjs
 
-EXPOSE 80
+ENV PORT=3000
+EXPOSE 3000
 
 CMD ["node", "dist/src/main.js"]

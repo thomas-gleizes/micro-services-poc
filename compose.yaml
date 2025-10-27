@@ -75,7 +75,7 @@ services:
 
   product_db:
     image: postgres:15
-    container_name: product_db
+    container_name: Kalat.System.Database.Product
     restart: always
     environment:
       POSTGRES_USER: product

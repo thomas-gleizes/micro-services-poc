@@ -3,14 +3,12 @@ import { IProductCommandRepository } from '../../../domain/repositories/product-
 import { Inject, Injectable } from '@nestjs/common'
 import { ProductId } from '../../../domain/value-object/product-id.vo'
 import { EVENT_STORE, IEventStore } from '../../events-store/event-store.interface'
-import { EventPublisher } from '@nestjs/cqrs'
 
 @Injectable()
 export class ProductCommandRepository implements IProductCommandRepository {
   constructor(
     @Inject(EVENT_STORE)
     private readonly eventStore: IEventStore,
-    private readonly publisher: EventPublisher,
   ) {}
 
   async findById(id: ProductId): Promise<ProductAggregate | null> {
@@ -25,7 +23,7 @@ export class ProductCommandRepository implements IProductCommandRepository {
       aggregate.version = event.version
     }
 
-    return this.publisher.mergeObjectContext(aggregate)
+    return aggregate
   }
 
   async save(aggregate: ProductAggregate): Promise<void> {

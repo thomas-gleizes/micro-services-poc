@@ -28,11 +28,14 @@ export class OutboxService {
     })
   }
 
-  async processPendingEvents() {
+  async processEvents() {
     await this.prisma.$transaction(async (transaction) => {
       const events = await this.reserveEvents(transaction)
+      const pendingEvent = await transaction.outboxEvent.count({
+        where: { status: OutboxEventStatus.PENDING },
+      })
 
-      this.logger.verbose(`PROCESS ${events.length}`)
+      this.logger.verbose(`PROCESS ${events.length} on ${pendingEvent}`)
 
       for (const event of events) {
         try {
@@ -64,8 +67,14 @@ export class OutboxService {
             status: OutboxEventStatus.PROCESSING,
             processAt: { lte: new Date(Date.now() - 60 * 1000) },
           },
+          {
+            status: OutboxEventStatus.FAILED,
+            processAt: { lte: new Date(Date.now() - 60 * 1000) },
+            retryCount: { lte: 5 },
+          },
         ],
       },
+      take: 2,
     })
 
     if (events.length === 0) {

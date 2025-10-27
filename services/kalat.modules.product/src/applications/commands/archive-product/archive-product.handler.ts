@@ -1,4 +1,4 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
+import { CommandHandler, EventPublisher, ICommandHandler } from '@nestjs/cqrs'
 import { ArchiveProductCommand } from './archive-product.command'
 import { ProductAggregate } from '../../../domain/aggregates/product.aggregate'
 import {
@@ -8,6 +8,7 @@ import {
 import { Inject } from '@nestjs/common'
 import { ProductId } from '../../../domain/value-object/product-id.vo'
 import { ProductNotFoundException } from '../../../domain/exceptions/product-not-found.exceptions'
+import { ag } from '@faker-js/faker/dist/airline-DF6RqYmq'
 
 @CommandHandler(ArchiveProductCommand)
 export class ArchiveProductHandler

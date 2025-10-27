@@ -8,8 +8,8 @@ export class OutboxProcessorService {
 
   constructor(private readonly outbox: OutboxService) {}
 
-  @Interval('outbox_process', 10_000)
+  @Interval('outbox_process', 500)
   async execute() {
-    await this.outbox.processPendingEvents()
+    await this.outbox.processEvents()
   }
 }

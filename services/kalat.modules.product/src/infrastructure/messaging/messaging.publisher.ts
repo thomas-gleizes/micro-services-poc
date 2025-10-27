@@ -1,24 +1,18 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { KafkaProducer } from '../kafka/kafka.producer'
 import { EventData } from '../events-store/event-store.interface'
-import { IEvent } from '@nestjs/cqrs'
-import { MESSAGING_BASE } from './messaging.token'
-import { ConfigService } from '@nestjs/config'
+import { DOMAIN_TOPIC, MESSAGING_SERVICE } from './messaging.constants'
 
 @Injectable()
 export class MessagingPublisher {
-  constructor(
-    private readonly producer: KafkaProducer,
-    @Inject(MESSAGING_BASE) private readonly messagingBase: string,
-    private readonly config: ConfigService,
-  ) {}
+  constructor(private readonly producer: KafkaProducer) {}
 
   async publishEvent(events: EventData[]) {
     if (events.length === 0) return
     const firstEvent = events[0]
 
-    const topic = `${this.messagingBase}.domain.${firstEvent.aggregateType}`
-    const createdBy = this.config.getOrThrow<string>('SERVICE_NAME')
+    const topic = `${DOMAIN_TOPIC}.${firstEvent.aggregateType}`
+    const createdBy = MESSAGING_SERVICE
 
     return this.producer.send(
       topic,
@@ -27,7 +21,7 @@ export class MessagingPublisher {
         version: event.version,
         aggregate_id: event.aggregateId,
         state: event.type,
-        content_type: `${this.messagingBase}.domain.${event.type}`,
+        content_type: `${DOMAIN_TOPIC}.${event.type}`,
         payload: event.payload,
         created_by: createdBy,
         created_at: event.createdAt.toISOString(),

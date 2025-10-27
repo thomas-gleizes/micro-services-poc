@@ -1,24 +1,22 @@
 import { Kafka, Producer } from 'kafkajs'
-import { Inject, Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { Message } from '../messaging/message.interface'
 import { KAFKA_BROKER } from './kafka.token'
+import { getKafkaConfig } from './kafka.config'
 
 @Injectable()
-export class KafkaProducer {
+export class KafkaProducer implements OnModuleInit {
   private readonly _logger = new Logger('PRODUCER')
 
   private readonly producer: Producer
 
-  constructor(@Inject(KAFKA_BROKER) broker: Kafka) {
-    this.producer = broker.producer({ allowAutoTopicCreation: true })
+  constructor(@Inject(KAFKA_BROKER) broker: Kafka, configService: ConfigService) {
+    this.producer = broker.producer(getKafkaConfig(configService).producer)
   }
 
-  connect() {
-    return this.producer.connect()
-  }
-
-  disconnect() {
-    return this.producer.disconnect()
+  async onModuleInit() {
+    await this.producer.connect()
   }
 
   async send<M extends Message<any, any>>(topic: string, messages: M[], partitionKey: string) {

@@ -5,12 +5,14 @@ import { InfrastructureException } from '../exceptions/infrastructure.exception'
 import { AggregateRoot } from '../../shared/aggregate-root.interface'
 import { PrismaService } from '../../shared/prisma/prisma.service'
 import { OutboxService } from './outbox/outbox.service'
+import { EventPublisher } from '@nestjs/cqrs'
 
 @Injectable()
 export class EventStore implements IEventStore {
   constructor(
     private readonly prisma: PrismaService,
     private readonly outbox: OutboxService,
+    private readonly publisher: EventPublisher,
   ) {}
 
   async findEventByAggregate(aggregateId: string): Promise<EventData[]> {
@@ -57,6 +59,8 @@ export class EventStore implements IEventStore {
 
         await transaction.event.createMany({ data: storableEvents })
         await this.outbox.saveEvents(transaction, storableEvents)
+
+        this.publisher.mergeObjectContext(aggregate).commit()
 
         return storableEvents
       } catch (error) {}

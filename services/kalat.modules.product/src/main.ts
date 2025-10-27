@@ -6,6 +6,8 @@ import { HttpLoggingInterceptor } from './presentation/interceptor/http-logging-
 import { DomainExceptionFilters } from './presentation/exception-filters/domain-exception.filters'
 import { GlobalExceptionFilters } from './presentation/exception-filters/global-exception.filters'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import { MicroserviceOptions } from '@nestjs/microservices'
+import { getKafkaMicroserviceOptions } from './infrastructure/kafka/kafka.config'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { logger: ['verbose'] })
@@ -30,6 +32,9 @@ async function bootstrap() {
     yamlDocumentUrl: 'docs.yaml',
   })
 
+  app.connectMicroservice<MicroserviceOptions>(getKafkaMicroserviceOptions(config))
+
+  await app.startAllMicroservices()
   await app.listen(config.get<number>('PORT', 3000))
 }
 

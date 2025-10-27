@@ -1,9 +1,9 @@
-import { IProjectionHandler, Projection } from '../../messaging/event/projection.decorator'
 import { ProductArchivedEvent } from '../../../domain/events/products/product-archived.event'
 import { EventData } from 'src/infrastructure/events-store/event-store.interface'
 import { PrismaService } from '../../../shared/prisma/prisma.service'
 import { Prisma } from '@prisma/client'
 import { RecordNotFoundException } from '../../exceptions/record-not-found.exception'
+import { IProjectionHandler, Projection } from '../../messaging/event/projection.decorator'
 
 @Projection(ProductArchivedEvent)
 export class ProductArchivedProjection implements IProjectionHandler<ProductArchivedEvent> {

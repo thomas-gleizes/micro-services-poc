@@ -1,6 +1,5 @@
 import { ProductStatus } from '../value-object/product-status.enum'
 import { ProductId } from '../value-object/product-id.vo'
-import { productEvents } from '../events'
 
 export type ReadProductModel = {
   id: string
