@@ -8,15 +8,14 @@ datasource db {
 }
 
 model ReadableProduct {
-  id               String   @id @db.Uuid
-  name             String
-  description      String
-  price            Float
-  currency         String
-  isAvailable      Boolean
-  createdAt        DateTime
-  updatedAt        DateTime
-  aggregateVersion Int      @map("aggregate_version")
+  id          String   @id @db.Uuid
+  name        String
+  description String
+  price       Float
+  currency    String
+  isAvailable Boolean
+  createdAt   DateTime
+  updatedAt   DateTime
 
   @@map("readable_products")
 }

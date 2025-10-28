@@ -34,36 +34,34 @@ export class EventStore implements IEventStore {
 
   async save(aggregate: AggregateRoot): Promise<void> {
     await this.prisma.$transaction(async (transaction) => {
-      try {
-        const uncommittedEvents = aggregate.getUncommittedEvents()
+      const uncommittedEvents = aggregate.getUncommittedEvents()
 
-        const eventsPlayed = await transaction.event.count({
-          where: { aggregateId: aggregate.getAggregateId() },
-        })
+      const eventsPlayed = await transaction.event.count({
+        where: { aggregateId: aggregate.getAggregateId() },
+      })
 
-        if (aggregate.version > 1) {
-          if (eventsPlayed !== aggregate.version) {
-            throw new InfrastructureException('Invalid version')
-          }
+      if (aggregate.version > 1) {
+        if (eventsPlayed !== aggregate.version) {
+          throw new InfrastructureException('Invalid version')
         }
+      }
 
-        const storableEvents: EventData[] = uncommittedEvents.map<EventData>((event, index) => ({
-          id: randomUUID(),
-          type: event.constructor.name,
-          payload: event as EventPayload,
-          version: eventsPlayed + index + 1,
-          aggregateId: aggregate.getAggregateId(),
-          aggregateType: aggregate.getAggregateType(),
-          createdAt: new Date(),
-        }))
+      const storableEvents: EventData[] = uncommittedEvents.map<EventData>((event, index) => ({
+        id: randomUUID(),
+        type: event.constructor.name,
+        payload: event as EventPayload,
+        version: eventsPlayed + index + 1,
+        aggregateId: aggregate.getAggregateId(),
+        aggregateType: aggregate.getAggregateType(),
+        createdAt: new Date(),
+      }))
 
-        await transaction.event.createMany({ data: storableEvents })
-        await this.outbox.saveEvents(transaction, storableEvents)
+      await transaction.event.createMany({ data: storableEvents })
+      await this.outbox.saveEvents(transaction, storableEvents)
 
-        this.publisher.mergeObjectContext(aggregate).commit()
+      this.publisher.mergeObjectContext(aggregate).commit()
 
-        return storableEvents
-      } catch (error) {}
+      return storableEvents
     })
   }
 }

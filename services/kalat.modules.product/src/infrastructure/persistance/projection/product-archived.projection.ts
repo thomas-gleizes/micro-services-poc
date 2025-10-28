@@ -1,17 +1,16 @@
-import { ProductArchivedEvent } from '../../../domain/events/products/product-archived.event'
-import { EventData } from 'src/infrastructure/events-store/event-store.interface'
-import { PrismaService } from '../../../shared/prisma/prisma.service'
+import { EventsHandler, IEventHandler } from '@nestjs/cqrs'
 import { Prisma } from '@prisma/client'
+import { ProductArchivedEvent } from '../../../domain/events/products/product-archived.event'
 import { RecordNotFoundException } from '../../exceptions/record-not-found.exception'
-import { IProjectionHandler, Projection } from '../../messaging/event/projection.decorator'
+import { PrismaService } from '../../../shared/prisma/prisma.service'
 
-@Projection(ProductArchivedEvent)
-export class ProductArchivedProjection implements IProjectionHandler<ProductArchivedEvent> {
+@EventsHandler(ProductArchivedEvent)
+export class ProductArchivedProjection implements IEventHandler<ProductArchivedEvent> {
   constructor(private readonly prisma: PrismaService) {}
 
-  async handle(event: EventData<ProductArchivedEvent>): Promise<void> {
+  async handle(event: ProductArchivedEvent): Promise<void> {
     try {
-      await this.prisma.readableProduct.delete({ where: { id: event.aggregateId } })
+      await this.prisma.readableProduct.delete({ where: { id: event.productId } })
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === '2022') {

@@ -11,11 +11,10 @@ import { ProductQueryRepository } from '../../infrastructure/persistance/reposit
 import { IDENTIFIANT_GENERATOR } from '../../domain/ports/identifiant-generator.port'
 import { IdentifiantGeneratorAdapter } from '../../infrastructure/adapters/identifiant-generator-adapter.service'
 import { productProjections } from '../../infrastructure/persistance/projection'
-import { ProductConsumer } from '../../infrastructure/consumers/product.consumer'
 
 @Module({
   imports: [CqrsModule],
-  controllers: [ProductController, ProductConsumer],
+  controllers: [ProductController],
   providers: [
     ProductMapper,
     {

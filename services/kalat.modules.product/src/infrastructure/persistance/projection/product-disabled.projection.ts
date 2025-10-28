@@ -1,16 +1,15 @@
-import { IProjectionHandler, Projection } from '../../messaging/event/projection.decorator'
+import { EventsHandler, IEventHandler } from '@nestjs/cqrs'
 import { ProductDisabledEvent } from '../../../domain/events/products/product-disabled.event'
-import { EventData } from 'src/infrastructure/events-store/event-store.interface'
 import { PrismaService } from '../../../shared/prisma/prisma.service'
 
-@Projection(ProductDisabledEvent)
-export class ProductDisabledProjection implements IProjectionHandler<ProductDisabledProjection> {
+@EventsHandler(ProductDisabledEvent)
+export class ProductDisabledProjection implements IEventHandler<ProductDisabledEvent> {
   constructor(private readonly prisma: PrismaService) {}
 
-  async handle(event: EventData<ProductDisabledProjection>): Promise<void> {
+  async handle(event: ProductDisabledEvent): Promise<void> {
     await this.prisma.readableProduct.update({
-      where: { id: event.aggregateId },
-      data: { isAvailable: false, aggregateVersion: event.version },
+      where: { id: event.productId },
+      data: { isAvailable: false },
     })
   }
 }
